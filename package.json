@@ -22,7 +22,6 @@
   "dependencies": {
     "express": "^4.17.1",
     "swagger-ui-express": "^4.1.4",
-    "javascript-obfuscator": "^1.9.0",
     "dafsm": "git+https://github.com/vcomm/dafsm-node.git"
   },
   "devDependencies": {}

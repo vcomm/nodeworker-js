@@ -155,11 +155,6 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
     }
 
     validObjectStates(states) {
-        /*
-        for (var key of Object.keys(states)) {
-            console.log(key + " -> " + p[key])
-        }
-        */
         for (let [key, state] of Object.entries(states)) {
             if (state && state.hasOwnProperty("exits")) {
                 state.exits.forEach(ext => {

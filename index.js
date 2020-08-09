@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 5000;
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
-//const obfuscator = require('javascript-obfuscator');
 const adaptive = require('./server/engine')
 const engine = new adaptive.aEngine('.././logic/')
 engine.init(engine.load(require('./logic/main.json')), engine._cntn_)
@@ -30,8 +29,6 @@ app.get('/evlist', (req, res) => {
 })
 
 app.post('/attach', (req, res) => {
-//    console.log("Node Worker attach dafsm logic :",req.body);
-//    res.setHeader('Content-Type', 'application/json'); 
     if (req.body)
         res.json({ service: `Node Worker attach dafsm logic`, responce: engine.load(req.body)})
     else
@@ -55,7 +52,6 @@ app.get('/exec/:evname', (req, res) => {
 })
 
 app.post('/create/:evname', (req, res) => {
-//    console.log(`Node Worker create new event[${req.params.evname}]:`,req.body);  
     if (req.body && req.body.func)
         res.json({ service: `Node Worker create new event[${req.params.evname}]`, responce: engine.emitOn(req.params.evname,req.body.func)}) 
     else
@@ -97,33 +93,10 @@ app.get('/test', (req, res) => {
     res.send(template);
 });
 
-/*
-const bios = {
-    fn_tst: new Function('cntx', 'cntx.a = 10; return cntx')
-}
-const JavaScriptObfuscator = require('javascript-obfuscator');
-const obfuscationResult = JavaScriptObfuscator.obfuscate(
-    `
-    cntx.x = 40;
-    cntx.list = [cntx.x,cntx.x*2,cntx.x+10] 
-    return cntx;
-    `,
-    {
-        compact: false,
-        controlFlowFlattening: true,
-        numbersToExpressions: true,
-        simplify: true,
-        shuffleStringArray: true,
-        splitStrings: true
-    }
-);
-bios['fn_my'] = new Function('cntx', obfuscationResult)
-*/
 const server = http.createServer(app);
 server.listen(PORT, (err) => {
     if (err) {
         throw new Error(err);
     }
-//    console.error(`Lambda: ${JSON.stringify(bios['fn_my']({}))}`)
     console.log("Node Worker now running on port", server.address());
 });
