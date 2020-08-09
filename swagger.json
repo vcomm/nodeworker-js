@@ -1,0 +1,336 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "NODE Adaptive Worker API overview",
+      "description": "Concurrent Distributed Applications Systems (CDAS) / Adaptive Cluster Provisioning"
+    },
+    "servers": [
+      {
+        "url": "/" 
+      }
+    ],
+    "paths": {
+      
+      "/version": {
+        "get": {
+          "summary": "NODE Adaptive Worker API versions 1.0",          
+          "operationId": "listVersions",
+          "tags": [
+            "info"
+          ],
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/version"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/evlist": {
+        "get": {
+          "summary": "Node Worker events list",          
+          "operationId": "listEvents",
+          "tags": [
+            "info"
+          ],
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/resparray"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/attach": {
+        "post": {
+          "summary": "Node Worker attach dafsm logic",          
+          "operationId": "attachLogic",
+          "tags": [
+            "oper"
+          ],
+          "requestBody": {
+            "description": "Add and attach dafsm logic",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/logic"
+                }
+              }
+            }
+          },          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/logics": {
+        "get": {
+          "summary": "Node Worker dafsm get logics list",          
+          "operationId": "listLogic",
+          "tags": [
+            "info"
+          ],
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/resparray"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/logic/{evname}": {
+        "delete": {
+          "summary": "Node Worker delete dafsm logic by name",
+          "operationId": "delLogic",
+          "tags": [
+            "oper"
+          ],
+          "parameters": [
+            {
+              "name": "evname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/logics/{evname}": {
+        "get": {
+          "summary": "Node Worker dafsm get logic script by name",
+          "operationId": "delLogic",
+          "tags": [
+            "info"
+          ],
+          "parameters": [
+            {
+              "name": "evname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/exec/{evname}": {
+        "get": {
+          "summary": "Node Worker even drive on[{evname}] by name",
+          "operationId": "execLogic",
+          "tags": [
+            "oper"
+          ],
+          "parameters": [
+            {
+              "name": "evname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      
+      "/create/{evname}": {
+        "post": {
+          "summary": "Node Worker create new event[{evname}] listener",          
+          "operationId": "createEvent",
+          "tags": [
+            "oper"
+          ],
+          "parameters": [
+            {
+              "name": "evname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Create new event listerner",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/logic"
+                }
+              }
+            }
+          },           
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "func"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      
+      "/event/{evname}": {
+        "delete": {
+          "summary": "Node Worker remove all listeners by event name",
+          "operationId": "delEvent",
+          "tags": [
+            "oper"
+          ],
+          "parameters": [
+            {
+              "name": "evname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }      
+
+    },
+
+    "components": {
+      "schemas": {
+        "version": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string"
+            }, 
+            "version": {
+              "type": "string"
+            }                      
+          }          
+        },
+        "resparray": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string"
+            }, 
+            "responce": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }            
+            }             
+          }          
+        },        
+        "respobject": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string"
+            }, 
+            "responce": {
+              "type": "object"
+            }             
+          }          
+        },
+        "logic": {
+          "type": "object",
+          "required": [
+            "id","states"
+          ]
+        }          
+      }
+    }
+  }

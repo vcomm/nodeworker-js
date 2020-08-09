@@ -1,0 +1,1 @@
+docker push vcomm/nodejsworker:http

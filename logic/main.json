@@ -1,0 +1,101 @@
+{
+  "id": "main",
+  "type": "FSM",
+  "prj": "test_",
+  "complete": false,
+  "start": {
+    "name": "fn_initialize",
+    "func": "console.debug(`: Run fn_initialize:`)"
+  },
+  "stop": {
+    "name": "fn_finishing",
+    "func": "console.debug(`: Run fn_finishing:`)"
+  },
+  "countstates": 4,
+  "states": [
+    {
+      "key": "init",
+      "name": "InitialState",
+      "transitions": [
+        {
+          "nextstatename": "request",
+          "triggers": [
+            {
+              "name": "ev_envComplete",
+              "func": "console.debug(`: Run ev_envComplete:`); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fn_reqPrepare",
+              "func": "console.debug(`: Run fn_reqPrepare:`);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "request",
+      "superstate": {
+        "link": "superstate.json"
+      },
+      "name": "superstate",
+      "entries": [
+        {
+          "name": "fn_initResponse",
+          "func": "console.debug(`: Run fn_initResponse:`);"
+        }
+      ],
+      "transitions": [
+        {
+          "nextstatename": "response",
+          "triggers": [
+            {
+              "name": "ev_reqComplete",
+              "func": "console.debug(`: Run ev_reqComplete:`); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fn_resPrepare",
+              "func": "console.debug(`: Run fn_resPrepare:`);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "response",
+      "name": "resState",
+      "entries": [
+        {
+          "name": "fn_initResponse",
+          "func": "console.debug(`: Run fn_initResponse:`);"
+        }
+      ],
+      "exits": [
+        {
+          "name": "fn_sendResponse",
+          "func": "console.debug(`: Run fn_sendResponse:`);"
+        }
+      ],
+      "transitions": [
+        {
+          "nextstatename": "request",
+          "triggers": [
+            {
+              "name": "ev_resComplete",
+              "func": "console.debug(`: Run ev_resComplete:`); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fn_updateSession",
+              "func": "console.debug(`: Run fn_updateSession:`);"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

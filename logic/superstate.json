@@ -1,0 +1,96 @@
+{
+  "id": "superstate",
+  "type": "FSM",
+  "prj": "test_",
+  "complete": false,
+  "start": {
+    "name": "fnStart",
+    "func": "console.debug(`: Run fnStart:`);"
+  },
+  "stop": {
+    "name": "fnStop",
+    "func": "console.debug(`: Run fnStop:`);"
+  },
+  "countstates": 3,
+  "states": [
+    {
+      "key": "init",
+      "name": "InitialState",
+      "exits": [
+        {
+          "name": "fnLetsgo",
+          "func": "console.debug(`: Run fnLetsgo:`);"
+        }
+      ],
+      "transitions": [
+        {
+          "nextstatename": "try",
+          "triggers": [
+            {
+              "name": "evComplete",
+              "func": "console.debug(`: Run evComplete:`); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fnGoto",
+              "func": "console.debug(`: Run fnGoto:`);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "try",
+      "name": "CountState",
+      "stays": [
+        {
+          "name": "fnCount",
+          "func": "console.debug(`: Run fnCount:`);"
+        }
+      ],
+      "transitions": [
+        {
+          "nextstatename": "final",
+          "triggers": [
+            {
+              "name": "evCounFinish",
+              "func": "console.debug(`: Run evCounFinish:`); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fnGoto",
+              "func": "console.debug(`: Run fnGoto:`);"
+            }
+          ]
+        },
+        {
+          "nextstatename": "try",
+          "triggers": [
+            {
+              "name": "evContinue",
+              "func": "console.debug(`: Run evContinue:`); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fnBalance",
+              "func": "console.debug(`: Run fnBalance:`);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "final",
+      "name": "FinalState",
+      "entries": [
+        {
+          "name": "fnGoodbye",
+          "func": "console.debug(`: Run fnGoodbye:`);"
+        }
+      ]
+    }
+  ]
+}

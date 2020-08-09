@@ -1,2 +1,2 @@
 # nodeworker-js
-Node worker fro node.js
+Node worker for node.js

@@ -1,0 +1,1 @@
+docker build -t vcomm/nodejsworker:http .

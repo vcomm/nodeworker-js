@@ -1,0 +1,29 @@
+{
+  "name": "nodeworker",
+  "version": "1.0.0",
+  "description": "Node adaptive worker engine for node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vcomm/nodeworker-js.git"
+  },
+  "keywords": [
+    "worker"
+  ],
+  "author": "Yakov Liskoff",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vcomm/nodeworker-js/issues"
+  },
+  "homepage": "https://github.com/vcomm/nodeworker-js#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "swagger-ui-express": "^4.1.4",
+    "javascript-obfuscator": "^1.9.0",
+    "dafsm": "git+https://github.com/vcomm/dafsm-node.git"
+  },
+  "devDependencies": {}
+}
