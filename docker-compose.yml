@@ -1,0 +1,11 @@
+version: '3'
+services:
+  worker-nodejs:
+    restart: always
+#    image: vcomm/nodejsworker:http    
+    build: ./
+    container_name: nodeworkerjs    
+    ports:
+      - 3000:3000 
+    environment:
+      APP_NAME: "node worker application by using DAFSM"
