@@ -2,10 +2,7 @@
 
 const bodyParser = require('body-parser')
 const express = require('express');
-const http = require('http');
 const app = express();
-
-const PORT = process.env.PORT || 5000;
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
@@ -93,10 +90,46 @@ app.get('/test', (req, res) => {
     res.send(template);
 });
 
-const server = http.createServer(app);
-server.listen(PORT, (err) => {
-    if (err) {
-        throw new Error(err);
-    }
-    console.log("Node Worker now running on port", server.address());
+/*-----------------------------*/
+const fs = require('fs');
+const https = require('https');
+
+const PORT = process.env.PORT || 5000;
+
+const options = {
+    key:   fs.readFileSync(__dirname + '/ssl/server.key'),
+    cert:  fs.readFileSync(__dirname + '/ssl/server.crt')
+}
+
+const server = https
+    .createServer(options,app)
+    .listen(PORT, (error) => {
+        if (error) {
+            console.error(error)
+            //throw new Error(err);
+            return process.exit(1)
+        } else {
+            console.log('Listening on port: ' + PORT + '.')
+            console.log("Node Worker now running on port", server.address())
+        }
+    })
+/*
+const http2 = require('http2');
+
+const server = http2.createSecureServer(options);
+server.on('stream', (stream, headers) => {
+ // stream - это дуплексный поток
+ // headers - это объект, содержащий заголовки запроса
+
+ // команда respond отправит заголовки клиенту
+ // мета-заголовки начинаются со знака двоеточия (:)
+ stream.respond({ ':status': 200 });
+
+ // тут, кроме того, доступны команды stream.respondWithFile()
+ // и stream.pushStream()
+
+ stream.end('Hello World!');
 });
+
+server.listen(PORT);
+*/
