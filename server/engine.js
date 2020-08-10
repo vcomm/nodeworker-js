@@ -45,6 +45,7 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
         })        
         this._cntn_ = acntn || new adaptiveContent()
         this._cntn_.engine(this)
+        this.init(this.load(this.read('main.json')), this._cntn_)
     }     
 
     getCntn() { return this._cntn_ }
@@ -61,12 +62,20 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
         }    
     }
 
+    activeLogic(logicname) {
+        if (logicname && this._logics_.hasOwnProperty(logicname)) {
+            this.init(this._logics_[logicname], this._cntn_)
+            return { activated: `${logicname} complete` }
+        } else
+            return { activated: `${logicname} failed: logic not exist` }
+    }
+
     delLogic(logicname) {
         if (logicname && this._logics_.hasOwnProperty(logicname)) {
             delete this._logics_[logicname]
             return { deleted: `${logicname} complete` }
         } else
-            return { deleted: `${logicname} failed` }
+            return { deleted: `${logicname} failed: logic not exist` }
     }
 
     removeEvent(evname) {

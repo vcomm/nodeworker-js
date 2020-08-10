@@ -11,7 +11,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 const adaptive = require('./server/engine')
 const engine = new adaptive.aEngine('.././logic/')
-engine.init(engine.load(require('./logic/main.json')), engine._cntn_)
+//engine.init(engine.load(require('./logic/main.json')), engine._cntn_)
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -33,6 +33,10 @@ app.post('/attach', (req, res) => {
         res.json({ service: `Node Worker attach dafsm logic`, responce: engine.load(req.body)})
     else
         res.json({ service: `Node Worker attach dafsm logic`, responce: `Failed: Missing dafsm logic script in request body`})
+})
+
+app.get('/activate/:logicname', (req, res) => {
+    res.json({ service: `Node Worker activate dafsm logic`, responce: engine.activeLogic(req.params.logicname)})
 })
 
 app.delete('/logic/:evname', (req, res) => {   

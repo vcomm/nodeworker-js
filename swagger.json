@@ -89,6 +89,38 @@
         }
       },
 
+      "/activate/{logicname}": {
+        "get": {
+          "summary": "Node Worker activate dafsm logic",
+          "operationId": "activateLogic",
+          "tags": [
+            "oper"
+          ],
+          "parameters": [
+            {
+              "name": "logicname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
       "/logics": {
         "get": {
           "summary": "Node Worker dafsm get logics list",          
