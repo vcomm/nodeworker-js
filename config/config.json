@@ -1,0 +1,12 @@
+{
+    "setup" : {
+        "exec": "./server/worker.js",
+        "args": ["--use", "http"]
+    },
+    "numbers": 2,
+    "maxnumbers": 0,
+    "env" : [
+        { "script": "main.json", "mode": "loop" },
+        { "script": "main.json", "mode": "event" }
+    ]            
+} 

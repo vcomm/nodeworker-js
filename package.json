@@ -4,7 +4,7 @@
   "description": "Node adaptive worker engine for node.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node cluster"
   },
   "repository": {
     "type": "git",
@@ -20,9 +20,11 @@
   },
   "homepage": "https://github.com/vcomm/nodeworker-js#readme",
   "dependencies": {
+    "dafsm": "git+https://github.com/vcomm/dafsm-node.git",
     "express": "^4.17.1",
+    "log4js": "^6.3.0",
     "swagger-ui-express": "^4.1.4",
-    "dafsm": "git+https://github.com/vcomm/dafsm-node.git"
+    "uuid": "^8.3.0"
   },
   "devDependencies": {}
 }

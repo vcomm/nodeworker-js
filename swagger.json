@@ -56,12 +56,22 @@
         }
       },
 
-      "/attach": {
+      "/attach/{workerid}": {
         "post": {
-          "summary": "Node Worker attach dafsm logic",          
+          "summary": "Node Worker attach dafsm logic to worker ID",          
           "operationId": "attachLogic",
           "tags": [
             "oper"
+          ],
+          "parameters": [
+            {
+              "name": "workerid",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
           ],
           "requestBody": {
             "description": "Add and attach dafsm logic",
@@ -89,7 +99,7 @@
         }
       },
 
-      "/activate/{logicname}": {
+      "/activate/{sname}/{workerid}": {
         "get": {
           "summary": "Node Worker activate dafsm logic",
           "operationId": "activateLogic",
@@ -98,7 +108,15 @@
           ],
           "parameters": [
             {
-              "name": "logicname",
+              "name": "sname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "workerid",
               "in": "path",
               "required": true,
               "schema": {
@@ -143,7 +161,7 @@
         }
       },
 
-      "/logic/{evname}": {
+      "/logic/{sname}/{workerid}": {
         "delete": {
           "summary": "Node Worker delete dafsm logic by name",
           "operationId": "delLogic",
@@ -158,33 +176,9 @@
               "schema": {
                 "type": "string"
               }
-            }
-          ],          
-          "responses": {
-            "200": {
-              "description": "200 response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/respobject"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-
-      "/logics/{evname}": {
-        "get": {
-          "summary": "Node Worker dafsm get logic script by name",
-          "operationId": "delLogic",
-          "tags": [
-            "info"
-          ],
-          "parameters": [
+            },
             {
-              "name": "evname",
+              "name": "workerid",
               "in": "path",
               "required": true,
               "schema": {
@@ -207,7 +201,47 @@
         }
       },
 
-      "/exec/{evname}": {
+      "/logics/{sname}/{workerid}": {
+        "get": {
+          "summary": "Node Worker dafsm get logic script by name and worker ID",
+          "operationId": "getLogic",
+          "tags": [
+            "info"
+          ],
+          "parameters": [
+            {
+              "name": "sname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "workerid",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/exec/{evname}/{workerid}/{mode}/{suid}": {
         "get": {
           "summary": "Node Worker even drive on[{evname}] by name",
           "operationId": "execLogic",
@@ -219,6 +253,33 @@
               "name": "evname",
               "in": "path",
               "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "workerid",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "mode",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "oneOf": [
+                  {"type": "string","enum": ["step"]},
+                  {"type": "integer"}
+                ]
+              }
+            },
+            {
+              "name": "suid",
+              "in": "path",
+              "required": false,
               "schema": {
                 "type": "string"
               }
@@ -239,7 +300,7 @@
         }
       },
       
-      "/create/{evname}": {
+      "/create/{evname}/{workerid}": {
         "post": {
           "summary": "Node Worker create new event[{evname}] listener",          
           "operationId": "createEvent",
@@ -249,6 +310,14 @@
           "parameters": [
             {
               "name": "evname",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "workerid",
               "in": "path",
               "required": true,
               "schema": {
@@ -285,7 +354,7 @@
         }
       },
       
-      "/event/{evname}": {
+      "/event/{evname}/{workerid}": {
         "delete": {
           "summary": "Node Worker remove all listeners by event name",
           "operationId": "delEvent",
@@ -300,6 +369,14 @@
               "schema": {
                 "type": "string"
               }
+            },
+            {
+              "name": "workerid",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
             }
           ],          
           "responses": {
@@ -309,6 +386,27 @@
                 "application/json": {
                   "schema": {
                     "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/resources": {
+        "get": {
+          "summary": "Node Worker get resources metrics for all workers",          
+          "operationId": "listResouces",
+          "tags": [
+            "info"
+          ],
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/version"
                   }
                 }
               }

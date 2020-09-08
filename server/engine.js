@@ -2,6 +2,9 @@
 
 const dafsm = require('dafsm')
 const EventEmitter = require('events')
+const log4js = require('log4js');
+const logger = log4js.getLogger('Engine');
+logger.level = 'trace';
 
 class adaptiveContent extends dafsm.CONTENT {
 
@@ -18,7 +21,7 @@ class adaptiveContent extends dafsm.CONTENT {
     addAtom(fnKey, fnCode) {
         this._abios_[fnKey] = new Function(this._dflow_, fnCode)
         if (!fnCode)
-            console.warn(`Not found ${fnKey} body`)
+            logger.warn(`Not found ${fnKey} atom's function body`)
     }
 
     remAtom(fnKey) {
@@ -31,21 +34,26 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
     constructor(path,acntn) {
         super(path || './')
         this._evemitter_ = new EventEmitter()
-        this._evemitter_.on('dafsm', (res) => {
-            console.log("Even drive on[fsm] :") 
-            if (this._cntn_.get()['complete'] != true) {
-                //this._cntn_.emit()
-                this.event(this._cntn_)
-                .then(() => { 
-                    res.json({ service:`Even drive on[dafsm]`, responce: this.getCntn().get()['keystate'] })
-                })                
-            } else {
-                res.json({ service:`Even drive on[dafsm]`, responce: `complete` })
-            }          
+        this._evemitter_.on('dafsm', (mode, stream, suid) => {
+            logger.trace(`Even drive on[dafsm] mode: ${mode}`) 
+            if (mode === 'step') {
+                if (this._cntn_.get()['complete'] != true) {
+                    //this._cntn_.emit()
+                    const prev = this.getCntn().get()['keystate']
+                    this.event(this._cntn_)
+                    .then(() => { 
+                        stream({ suid: suid, execute: {currState: prev, nextState: this.getCntn().get()['keystate']} })
+                    })                
+                } else {
+                    stream({ suid: suid, execute: {currState: `complete`, nextState: `complete`} })
+                }  
+            } else if (mode) { // mode shall be interval
+                this.loop(mode, stream, suid)
+            }       
         })        
         this._cntn_ = acntn || new adaptiveContent()
         this._cntn_.engine(this)
-        this.init(this.load(this.read('main.json')), this._cntn_)
+//        this.init(this.load(this.read('main.json')), this._cntn_)
     }     
 
     getCntn() { return this._cntn_ }
@@ -87,22 +95,26 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
     }
 
     read(link) {
-        console.debug(`Current directory: ${__dirname}, read: ${this._path_}${link}`)
+        logger.debug(`Current directory: ${__dirname}, read: ${this._path_}${link}`)
         return require(`${this._path_}${link}`)
     }     
 
     emitOn(evname,cblkfn) {
         if (evname) {
             let func = new Function('evname', cblkfn || 'console.log("Even drive on",evname)')
-            this._evemitter_.on(evname, (res) => { 
-                res.json({ service:`Even drive on[${evname}]`, responce: func(evname)})
+            this._evemitter_.on(evname, (mode, stream, suid) => { 
+                if (mode === 'step') {
+                    stream({ suid: suid, execute: `drive on[${evname}] | ${func(evname)}` })
+                } else if (mode) {
+                    // shall setInterval with xMs and numOfCounts
+                }
             })
         } 
         return this._evemitter_.eventNames()
     }
 
-    emitEvent(evname,res) {
-        return this._evemitter_.emit(evname,res);
+    emitEvent(evname, mode, stream, suid) {
+        return this._evemitter_.emit(evname, mode, stream, suid);
     }
 
     load(json) {
@@ -127,11 +139,11 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
             } else if (states instanceof Object) {
                 this.validObjectStates(states)
             } else {      
-                console.error('Not compatible States')
+                logger.error('Not compatible States')
                 status.error = 'Not compatible States'
             }
         } catch(e) {
-            console.error('Error: ' + e.name + ":" + e.message + "\n" + e.stack);
+            logger.fatal('Error: ' + e.name + ":" + e.message + "\n" + e.stack);
             status.error = e
         } finally {
             return logic
@@ -207,6 +219,17 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
                 }
             })                        
         }        
+    }
+
+    async loop(ms, stream) {
+        while(this.getCntn().get()['complete'] != true) {
+            const prev = this.getCntn().get()['keystate']
+            await this.event(this._cntn_)
+            .then(() => { 
+                stream({ suid: suid, execute: {currState: prev, nextState: this.getCntn().get()['keystate']} })
+            })
+            await new Promise(resolve => setTimeout(resolve, ms));
+        }
     }
 
     startLogic(logicname) {        
