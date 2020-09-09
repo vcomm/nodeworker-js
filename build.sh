@@ -1,1 +1,1 @@
-docker build -t vcomm/nodejsworker:http .
+docker build -t vcomm/nodejsworker:cluster .

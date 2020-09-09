@@ -15,5 +15,5 @@ RUN npm install
 # копируем исходный код
 COPY . .
 
-EXPOSE 5000
-CMD [ "node", "index.js" ]
+EXPOSE 5555
+CMD [ "node", "cluster.js" ]

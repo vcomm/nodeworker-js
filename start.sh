@@ -1,1 +1,1 @@
-docker run --name nodejsworker -p 5000:5000 -d --rm vcomm/nodejsworker:http
+docker run --name nodejsworker -p 5555:5555 -d --rm vcomm/nodejsworker:cluster

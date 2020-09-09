@@ -9,6 +9,7 @@ class aWorker extends Message {
 
     constructor(events) {
         super(`worker-${process.pid}`,events);
+        this.metrics = []
         this.engine = new adaptive.aEngine('.././logic/')
         logger = log4js.getLogger(`worker-${process.pid}`);
         logger.level = 'trace';
@@ -27,6 +28,7 @@ class aWorker extends Message {
                 }
                 if (msg.head) self.evMessage(msg);                  
             });
+        this.collectMetrics();    
     }
 
     msgSend(message) {
@@ -43,6 +45,23 @@ class aWorker extends Message {
 
     msgStream(message) {
         process.send({ stream: message });
+    }
+
+    collectMetrics() {
+        let count = 0;
+        const interval = 10000; // 10 sec
+        const retential_threshold = 60; // 10 min
+        let usageCpu = process.cpuUsage();
+        setInterval(()=>{
+            usageCpu = process.cpuUsage(usageCpu)
+            this.metrics.push({cpu: usageCpu, mem: process.memoryUsage()}) 
+            count++
+            if (count > retential_threshold) {
+                this.metrics = []
+                count = 0
+                logger.debug(`Clear process: ${process.pid} metrics`)
+            }
+        },interval)
     }
 }
 
@@ -87,6 +106,10 @@ new aWorker({
     delevent: (msg,  self) => {
         logger.trace(`Worker: ${process.pid} | delete event: ${msg.body.evname}`);    
         return new Promise((resolve) => resolve(self.engine.removeEvent(msg.body.evname))) 
+    },
+    metrics: (msg,  self) => {
+        logger.trace(`Worker: ${process.pid} | retrive metrics:`);    
+        return new Promise((resolve) => resolve(self.metrics)) 
     }
 }).init()
 

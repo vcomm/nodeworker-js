@@ -413,7 +413,38 @@
             }
           }
         }
-      }      
+      },    
+      "/metrics/{workerid}": {
+        "get": {
+          "summary": "Node Worker get metrics by worker ID",          
+          "operationId": "workerMetrics",
+          "tags": [
+            "info"
+          ],
+          "parameters": [
+            {
+              "name": "workerid",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/version"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }        
 
     },
 

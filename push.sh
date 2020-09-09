@@ -1,1 +1,1 @@
-docker push vcomm/nodejsworker:http
+docker push vcomm/nodejsworker:cluster

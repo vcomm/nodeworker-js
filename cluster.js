@@ -66,7 +66,7 @@ if (cluster.isMaster) {
                 })
                 .then(result => { 
                     logger.trace(`(${id})->`,result.data.body) 
-                    return result.data.body
+                    return { worker: id, events: result.data.body}
                 })
             ));
             res.json({ service: `Node Worker events list`, responce: elst})          
@@ -79,11 +79,11 @@ if (cluster.isMaster) {
                         origin  : 'master',
                         request : 'logics'
                     },
-                    body: "The request by path /version"
+                    body: "The request by path /logics"
                 })
                 .then(result => { 
                     logger.trace(`(${id})->`,result.data.body) 
-                    return result.data.body
+                    return { worker: id, logics: result.data.body}
                 })
             ));
             res.json({ service: `Node Worker dafsm get logics list`, responce: logics})           
@@ -192,11 +192,36 @@ if (cluster.isMaster) {
                 res.status(result.code).json({ service: `Node Worker remove all listeners by event[${req.params.evname}] on worker ${req.params.workerid}`, responce: result.data.body }) 
             })
         })   
-        .get('/resources', (req, res) => {   
-            res.json({ service: `Node Worker get resources metrics for all workers`, responce: { workers: master.resources, clients: Object.keys(master.clients) }}) 
+        .get('/resources', async (req, res) => {   
+            const metrics = await Promise.all(master._wpool_.map(
+                async (id) => await master.request({ 
+                    head: {
+                        target  : id,
+                        origin  : 'master',
+                        request : 'metrics'
+                    },
+                    body: "The request by path /metrics"
+                })
+                .then(result => { 
+                    logger.trace(`(${id})->`,result.data.body) 
+                    return { worker: id, metric: result.data.body}
+                })
+            ));            
+            res.json({ service: `Node Worker get resources metrics for all workers`, responce: { workers: master.resources, clients: Object.keys(master.clients), metrics: metrics }}) 
         })
-        .get('/resource/:workerid', (req, res) => {   
-            res.json({ service: `Node Worker get resource metrics by worker ID`, responce: ''}) 
+        .get('/metrics/:workerid', (req, res) => {   
+            master.request({ 
+                head: {
+                    target  : req.params.workerid,
+                    origin  : 'master',
+                    request : 'metrics'
+                },
+                body: "The request by path /metrics"
+            })
+            .then(result => { 
+                logger.trace(`(${req.params.workerid})->`,result.data.body) 
+                res.status(result.code).json({ service: `Node Worker get process metrics by worker ID`, responce: result.data.body }) 
+            })             
         })     
         .listen(PORT, () => {
             logger.trace(`Web Server now running on port`, PORT);
