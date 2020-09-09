@@ -10,7 +10,8 @@ class aWorker extends Message {
     constructor(events) {
         super(`worker-${process.pid}`,events);
         this.metrics = []
-        this.engine = new adaptive.aEngine('.././logic/')
+//        this.engine = new adaptive.aEngine('.././logic/')
+        this.engine = new adaptive.aEngine('../../logic/')
         logger = log4js.getLogger(`worker-${process.pid}`);
         logger.level = 'trace';
         if (process.env['script']) {

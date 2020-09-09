@@ -4,7 +4,8 @@
   "description": "Node adaptive worker engine for node.js",
   "main": "index.js",
   "scripts": {
-    "test": "node cluster"
+    "test": "node cluster",
+    "secure": "javascript-obfuscator ./server --output ./dist --compact true --self-defending false"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,7 @@
     "swagger-ui-express": "^4.1.4",
     "uuid": "^8.3.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "javascript-obfuscator": "^2.1.0"
+  }
 }

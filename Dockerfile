@@ -15,5 +15,8 @@ RUN npm install
 # копируем исходный код
 COPY . .
 
+RUN npm run secure
+RUN rm -r ./server
+
 EXPOSE 5555
 CMD [ "node", "cluster.js" ]

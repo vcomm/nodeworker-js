@@ -1,6 +1,6 @@
 {
     "setup" : {
-        "exec": "./server/worker.js",
+        "exec": "./dist/server/worker.js",
         "args": ["--use", "http"]
     },
     "numbers": 2,

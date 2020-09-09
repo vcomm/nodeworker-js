@@ -14,7 +14,8 @@ config.maxnumbers = require('os').cpus().length;
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 
-const cMaster = require('./server/master')
+//const cMaster = require('./server/master')
+const cMaster = require('./dist/server/master')
 
 const log4js = require('log4js');
 const logger = log4js.getLogger('cluster');
