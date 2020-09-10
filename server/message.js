@@ -107,7 +107,7 @@ class Message {
     }
     /** Implementation required */
     msgSend(message) {
-        throw new Error('You have to implement the method doSomething!');
+        throw new Error('You have to implement the method doSomething!',message);
     }
 
     getChild() {

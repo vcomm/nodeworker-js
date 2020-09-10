@@ -1,0 +1,10 @@
+{
+    "id": "template",
+    "type": "FSM",
+    "prj": "proj_",
+    "complete": false,
+    "start": {},
+    "stop": {},
+    "countstates": 0,
+    "states": {}
+}

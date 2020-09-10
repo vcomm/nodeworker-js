@@ -5,8 +5,7 @@ const express = require('express');
 //const http = require('http');
 //const app = express();
 
-const PORT = process.env.PORT || 5555
-
+const process = require('process');
 const cluster = require('cluster');
 const config  = require('./config/config.json');
 config.maxnumbers = require('os').cpus().length;
@@ -21,13 +20,16 @@ const log4js = require('log4js');
 const logger = log4js.getLogger('cluster');
 logger.level = 'trace';
 
+const PORT = process.env.PORT || 5555
+
 if (cluster.isMaster) {
     const master = new cMaster(cluster,config)
 
     express()
         .use(bodyParser.urlencoded({ extended: false }))
-        .use(bodyParser.json())    
-        .get('/', (req, res) => res.redirect('/api'))    
+        .use(bodyParser.json())           
+        .use(express.static(__dirname + '/public/dist'))  // Set public folder as root
+//        .get('/', (req, res) => res.redirect('/api'))    
         .use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
         .get('/version', (req, res) => {
             res.status(200).json({ 
@@ -232,6 +234,6 @@ if (cluster.isMaster) {
     master.test()
 
 } else if (cluster.isWorker) {
-
+    logger.trace(`Worker: ${process.pid} start`);
 }
 

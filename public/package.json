@@ -1,0 +1,44 @@
+{
+  "name": "dafsmui",
+  "version": "1.0.0",
+  "description": "dafsm UI",
+  "private": true,
+  "scripts": {
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "stats": "webpack --json > stats.json && webpack-bundle-analyzer stats.json"
+  },
+  "keywords": [
+    "dafsm",
+    "cluster",
+    "provisioning"
+  ],
+  "author": "Yakov Liskoff",
+  "license": "ISC",
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "css-loader": "^4.2.1",
+    "css-minimizer-webpack-plugin": "^1.1.2",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^0.11.0",
+    "style-loader": "^1.2.1",
+    "terser-webpack-plugin": "^4.1.0",
+    "webpack": "^4.44.1",
+    "webpack-bundle-analyzer": "^3.8.0",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.14.0",
+    "bootstrap": "^4.5.2",
+    "codemirror": "^5.56.0",
+    "file-saver": "^2.0.2",
+    "jointjs": "^3.2.0",
+    "jquery": "^3.5.1",
+    "jsoneditor": "^9.0.4",
+    "normalize.css": "^8.0.1",
+    "popper.js": "^1.16.1"
+  }
+}

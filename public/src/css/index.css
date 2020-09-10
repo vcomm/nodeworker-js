@@ -1,0 +1,212 @@
+@import "~normalize.css";
+
+body {
+  padding-top: 5rem;
+}
+.starter-template {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.bd-placeholder-img {
+  font-size: 1.125rem;
+  text-anchor: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+    font-size: 3.5rem;
+  }
+}
+/* main.css */
+.trigger{
+	position: absolute;
+	text-decoration: none;
+	font-size: 16px;
+	letter-spacing:-1px;
+	font-family: verdana, helvetica, arial, sans-serif;
+	color:#000;
+	opacity: 0.9;
+	padding:4px 12px 6px 24px;
+	font-weight: bold;	
+	z-index:2;
+}
+.trigger.left {
+	left: 0;
+	border-top-right-radius: 5px;
+	-moz-border-radius-topright: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-bottomright: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+	opacity : 1.0;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color:#6e6e6e6e;
+    margin: auto;
+    padding: 20px;
+    border: 2px solid black;
+    width: 90%;
+}
+
+/* The Close Button */
+.close {
+    color: #070707;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    right: 20px;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+select.modal-enter, input.modal-enter {
+    width: 50%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+button.modal-enter {
+	border-radius: 10px;
+    background-color: #88bbd4;
+	border: 2px solid #060606;
+    color: black;
+    padding: 16px 32px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+button.modal-enter:hover {
+    background-color:rgb(4, 37, 54);
+    color: white;
+}
+
+/* Side Navigation*/
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: -20px;
+    right: 8px;
+    background-color: #e3e6e713;
+    color: #BDBDBD;
+    overflow-x: hidden;
+    transition: 0.8s;
+    padding-top: 100px;
+    font-family:Verdana;
+    opacity: 1.0;
+    border-radius: 5px;      
+    margin-top: 8px;   
+}
+
+.sidenav a {
+    padding: 8px 8px 8px 8px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #818181;
+    display: block;
+    transition: 0.3s
+}
+
+.sidenav a:hover, .offcanvas a:focus{
+    color: #e70f0f;
+}
+
+.closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px !important;
+    margin-left: 50px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+
+#paper {
+    transition: margin-left .5s;
+    padding: 16px;
+    margin-top: 5px;  
+/*    border: 2px solid black;*/
+    border-radius: 5px; 
+    background-color: whitesmoke
+}
+/*********************************************************************************/
+/* Navigation                                                                    */
+/*********************************************************************************/
+.navigation {
+    cursor: pointer;
+    display: inline-block;    
+    position: absolute;
+    z-index: 1000;   
+    right: 20px;	
+}
+
+.bar1, .bar2, .bar3 {
+    top: 10px;
+    width: 35px;
+    height: 5px;
+    background-color: rgb(0, 0, 0);
+    margin: 6px 0;
+    transition: 0.4s;
+}
+
+.change .bar1 {
+    -webkit-transform: rotate(-45deg) translate(-9px, 6px) ;
+    transform: rotate(-45deg) translate(-9px, 6px) ;
+}
+
+.change .bar2 {opacity: 0;}
+
+.change .bar3 {
+    -webkit-transform: rotate(45deg) translate(-8px, -8px) ;
+    transform: rotate(45deg) translate(-8px, -8px) ;
+}
+
+.output {
+    height: 6%;
+    width: 99.8%;
+    position: fixed;
+    z-index: 999;    
+    bottom: 15px;
+    left: 1px;
+    color: black;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: 0.8s;
+    font-family:Verdana;
+    opacity: 0.9;
+    background-color: white;
+    border-radius: 5px;
+    border: 2px solid black;
+  }

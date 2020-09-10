@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="eyes-on.png" type="image/x-png">
+    <meta name="description" content="">
+    <title>@DAFSM™ - Dashboard Tools</title>
+
+  </head>
+  <body style=" display: none;">
+    <div id="dialog" class="modal">
+    <div class="modal-dialog">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+    
+      <div id="State" style="display:none">
+        <input autofocus="autofocus" class="modal-enter" id="stateName" placeholder="choose a state name" type="text">
+        <button id="confirmState" class="modal-enter">Confirm</button>
+  
+        <br><label><b>Type: </b></label>
+        <input type="radio" name="stateType" value="initialState">Start
+        <input type="radio" name="stateType" value="finalState">End
+        <input type="radio" name="stateType" value="regularState" checked>Regular
+  
+      </div>
+    
+      <div id="Trans" style="display:none">
+        <!--<input autofocus="autofocus" class="modal-enter" id="transName" placeholder="choose a transition name" type="text">-->
+        
+        <select id="fromState" class="modal-enter">
+          <option value="" disabled selected>source state</option>
+        </select>
+        <select id="toState" class="modal-enter">
+          <option value="" disabled selected>target state</option>
+        </select>
+        <button id="confirmTrans" class="modal-enter">Confirm</button><br>
+      </div>
+  
+      <!--<div id="Code" style="display:none;width:100%;height:100%;overflow:auto;"></div>-->
+      </div>
+    </div>
+      <input id="projectinput" type="file" style="display:none;" />
+    </div>
+
+    <nav class="navbar fixed-top navbar-light" style="background-color: #e3f2fd; border: 2px solid black; border-radius: 5px;">
+      <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle"
+                type="button" id="dropdownMenuNavFile" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false" style="border-radius: 5px;"><i class="fas fa-copy"></i>
+          File
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuNavFile">      
+          <a class="dropdown-item" href="#" id="newGraph"><i class="fas fa-folder-plus"></i>   New</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true"><b>DAFSM localStore</b></a>
+          <a class="dropdown-item" href="#" id="openDafsm"><i class="fas fa-folder-open"></i>   Load</a>
+          <a class="dropdown-item" href="#" id="saveDafsm"><i class="fas fa-save"></i>   Save</a>           
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true"><b>PROJECT files</b></a>
+          <a class="dropdown-item" href="#" id="openProj"><i class="fas fa-folder-open"></i>   Open</a>
+          <a class="dropdown-item" href="#" id="saveProj"><i class="fas fa-save"></i>   Save</a>        
+        </div>
+      </div>
+      &nbsp;
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle"
+                type="button" id="dropdownMenuNavGraph" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false" style="border-radius: 5px;"><i class="fas fa-project-diagram"></i>
+          Graph
+        </button>
+        <div id="graphContextMenu" class="dropdown-menu" aria-labelledby="dropdownMenuNavGraph">
+          <a class="dropdown-item paper" href="#" id="makeState"><i class="fas fa-file-alt"></i>   make State</a>
+          <a class="dropdown-item paper" href="#" id="makeTrans"><i class="fas fa-exchange-alt"></i>   make Trans</a>
+          <a class="dropdown-item paper" href="#" id="showLogic"><i class="fab fa-codepen"></i>   show Logic</a>
+
+          <a class="dropdown-item state" href="#" id="delState"><i class="fas fa-trash"></i>   del State</a>
+          <div class="dropdown-divider state"></div>
+          <a class="dropdown-item state init" href="#" id="addEntry"><i class="fas fa-sign-in-alt"></i>   add Entry</a>
+          <a class="dropdown-item state final" href="#" id="addExit"><i class="fas fa-sign-out-alt"></i>   add Exit</a>
+          <a class="dropdown-item state init final" href="#" id="addStay"><i class="fas fa-recycle"></i>   add Stay</a>
+
+          <a class="dropdown-item trans" href="#" id="addTrigger"><i class="fas fa-bolt"></i>   add Trigger</a>
+          <a class="dropdown-item trans" href="#" id="addEffect"><i class="fab fa-buffer"></i>   add Effect</a>
+
+          <div class="dropdown-divider state"></div>
+          <a class="dropdown-item state disabled" href="#" tabindex="-1" aria-disabled="true"><i class="fas fa-exchange-alt"></i>   :Link Trans To:</a>
+          <div class="dropdown-divider state" id="dstStateList"></div>
+          
+        </div>
+      </div>
+      &nbsp;    
+      <div class="navbar">
+        <code id="selectedItem">Not Seleted</code>                      
+      </div>              
+    </div>
+    <div class="navigation" contextmenu="mymenu">
+      <div class="bar1"></div>
+      <div class="bar2"></div>
+      <div class="bar3"></div>
+    </div>  
+    </nav>
+
+    <div id="prjTemplate" class="tab-content sidenav" style="width: 0px;z-index: 10;">       
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist" style="margin-top: -20px;margin-left: 10px">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">MENU</a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="newAction(this)">New Action</a>
+            <a class="dropdown-item" href="#" onclick="showTab('a#net-connect-tab')">Link Target</a>
+          </div>
+        </li>
+        &nbsp;
+        <li class="nav-item">
+          <a class="nav-link active" id="json-editor-tab" data-toggle="pill" href="#jsoneditor" role="tab" aria-controls="jsoneditor" aria-selected="true">JSON</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="code-collect-tab" data-toggle="pill" href="#codecollect" role="button" aria-controls="codecollect" aria-selected="false">CODE</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" id="add-action-tab" title="" href="#" tabindex="-1" aria-disabled="true"></a>
+        </li>        
+        <li class="nav-item">
+          <a class="nav-link" id="net-connect-tab" data-toggle="pill" href="#connect" role="tab" aria-controls="connect" aria-selected="false">LINK</a>
+        </li>                
+      </ul>            
+      <div class="tab-pane active" id="jsoneditor" role="tabpanel" aria-labelledby="json-editor-tab"></div>
+      <div class="tab-pane" id="codecollect" role="tabpanel" aria-labelledby="code-collect-tab" count="0">
+<!--
+        <div class="card" style="margin: 10px;">
+          <div class="card-header" role="tab" id="" data-toggle="popover" data-placement="top"
+          data-content="{ s1: { entries: true, stays: true}  }">
+            <h5 class="mb-0" ondblclick="keepFuncJson(this)">
+                <a data-toggle="collapse" href="#collapsetemplate" aria-expanded="true" aria-controls="collapscount" contenteditable="true">fn_templateCode</a>
+            </h5>
+          </div>
+          <div id="collapsetemplate" class="collapse" role="tabpanel" aria-labelledby="headingcount">
+            <div class="card-body" onclick="addPaperTab(this)" ondblclick="updateFuncBody(this)"> return true; </div>
+          </div>
+        </div> 
+-->               
+      </div>
+      <div class="tab-pane" id="connect" role="tabpanel" aria-labelledby="net-connect-tab">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="targetStatus"><i class="fas fa-link"></i></span>
+          </div>
+          <input type="text" placeholder="Target" aria-label="Target" class="form-control">
+          <input type="text" placeholder="Port" aria-label="Port" class="form-control">
+          <button class="btn btn-primary dropdown-toggle" id="linkAction" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Connect</button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="getConnect('button#linkAction')">Connection</a>
+            <a class="dropdown-item target disabled" href="#" onclick="disConnect('button#linkAction')">Disconnect</a>
+            <div role="separator" class="dropdown-divider"></div>
+            <a class="dropdown-item target disabled" href="#" onclick="getLogicsList()">Get Logics List</a>
+            <a class="dropdown-item target disabled" href="#" onclick="attachLogic()">Attach New Logic</a>
+          </div>
+        </div>
+        &nbsp;
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Project</th>
+              <th scope="col">ID</th>
+              <th scope="col">Work</th>
+            </tr>
+          </thead>
+          <tbody id="listLogics">
+          </tbody>
+        </table>
+      </div>   
+    </div>
+
+    <main id="paper" role="main" class="mh-100 jumbotron" style="margin-top: -30px; height: 85vh; background-color: white">
+      <ul class="nav nav-pills justify-content-end" id="paper-tab" role="tablist" style="width: 100%;height: initial;transition: 0.8s;">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="code-edit-tab" data-toggle="pill" href="#Code" role="tab" aria-controls="Code" aria-selected="false"><b>Editor</b></a>
+        </li>        
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="graph-svg-tab" data-toggle="pill" href="#graph" role="tab" aria-controls="graph" aria-selected="true"><b>Graph</b></a>
+        </li>      
+      </ul>
+      <div class="tab-content" id="paper-tabContent" style="width: 100%;height: 100%;transition: 0.8s;">
+        <div class="tab-pane" id="Code" role="tabpanel" aria-labelledby="code-edit-tab" style="width: 90%;height: 90%;"></div> 
+        <div class="tab-pane active" id="graph" role="tabpanel" aria-labelledby="graph-svg-tab" style="width: 90%;height: 90%;"></div>      
+      </div>
+    </main>
+    <div id="monitor" class="output" role="tablist" count="0"></div> 
+</body>
+</html>

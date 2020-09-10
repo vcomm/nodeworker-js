@@ -176,6 +176,7 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
     }
 
     validObjectStates(states) {
+        const bios = this._cntn_.bios()
         for (let [key, state] of Object.entries(states)) {
             if (state && state.hasOwnProperty("exits")) {
                 state.exits.forEach(ext => {
@@ -221,7 +222,7 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
         }        
     }
 
-    async loop(ms, stream) {
+    async loop(ms, stream, suid) {
         while(this.getCntn().get()['complete'] != true) {
             const prev = this.getCntn().get()['keystate']
             await this.event(this._cntn_)
