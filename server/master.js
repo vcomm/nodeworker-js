@@ -15,13 +15,14 @@ class aMaster extends Message {
         this._cluster_ = cluster
         this._config_  = config || {
             setup : {
-                exec: './server/worker.js',
+                exec: '/worker.js',
                 args: ['--use', 'http']
             },
             numbers: 2,
+            maxnumbers: 2,
             env : [
-                { 'script': 'main.json'},
-                { 'script': 'main.json'}
+                { script: "logic/main.json" },
+                { script: "logic/main.json" }
             ]         
         }  
         this.resources = {}  
@@ -38,17 +39,10 @@ class aMaster extends Message {
         logger.trace(`Config cluster:\n`,this._config_); 
     } 
 
-    init() {
+    init(dir) {
         const self = this;       
         logger.trace(`Master process ${process.pid} cluster setting up ${this._config_.numbers} workers...`);
         this._cluster_.on('online', function(worker) {
-    /*        
-            if (self.resources[worker.id]) {
-                self.resources[worker.id].pid = worker.process.pid
-            } else {
-                self.resources[worker.id] = { pid : worker.process.pid }
-            }
-    */
             logger.trace(`Worker[${worker.id}]: ` + worker.process.pid + ' is online');       
         });        
         this._cluster_.on('exit', function(worker, code, signal) {
@@ -56,8 +50,12 @@ class aMaster extends Message {
             logger.trace('Restarting a new worker');
             self._cluster_.fork();
         });    
+        this._config_.setup.exec = __dirname + this._config_.setup.exec
         this._cluster_.setupMaster(this._config_.setup);     
         for(let worker,i = 0; i < this._config_.maxnumbers; i++) {   
+            if (this._config_.env[i]) 
+                this._config_.env[i].script = dir + this._config_.env[i].script
+            logger.debug(`Proc Env: ${dir} `, this._config_.env[i])
             worker = this._cluster_.fork(this._config_.env[i] || {})
             worker.on('message', function(msg) {
                 if (msg.chat) {
@@ -80,10 +78,10 @@ class aMaster extends Message {
         }
     }
 
-    test() {
+    update(dir) {
         for (const id in this._cluster_.workers) {
              logger.trace(`Master send msg to: `, id);              
-             this._cluster_.workers[id].send({ chat: 'Keepalive' })
+             this._cluster_.workers[id].send({ chat: 'Updatepath', path: dir })
              this._wpool_.push(id)
         }
     }

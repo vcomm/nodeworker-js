@@ -10,8 +10,7 @@ class aWorker extends Message {
     constructor(events) {
         super(`worker-${process.pid}`,events);
         this.metrics = []
-//        this.engine = new adaptive.aEngine('.././logic/')
-        this.engine = new adaptive.aEngine('../../logic/')
+        this.engine = new adaptive.aEngine('../')       
         logger = log4js.getLogger(`worker-${process.pid}`);
         logger.level = 'trace';
         if (process.env['script']) {
@@ -25,7 +24,11 @@ class aWorker extends Message {
         process
             .on('message', function(msg) {
                 if (msg.chat) {
-                    logger.trace(`Master to worker: ${process.pid} | `, msg.chat);            
+                    logger.trace(`Master to worker: ${process.pid} | `, msg.chat);  
+                    if (msg.chat === 'Updatepath') {   
+                        self.engine._path_ = msg.path + self.engine._path_  
+                        logger.trace(`Worker: ${process.pid}, update engine path | `, self.engine._path_);   
+                    }   
                 }
                 if (msg.head) self.evMessage(msg);                  
             });

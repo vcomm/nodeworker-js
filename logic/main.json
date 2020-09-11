@@ -28,7 +28,11 @@
           "effects": [
             {
               "name": "fn_reqPrepare",
-              "func": "console.debug(`: Run fn_reqPrepare:`);"
+              "func": "return (new Promise(resolve => { console.debug(`: Run fn_reqPrepare:`); setTimeout(() => resolve(cntx), 1000) })).then(data => { console.log(`: Complete async fn_reqPrepare:`); });"
+            },
+            {
+              "name": "fn_postPrepared",
+              "func": "console.debug(`: Run fn_postPrepared:`);"
             }
           ]
         }
@@ -37,7 +41,7 @@
     {
       "key": "request",
       "superstate": {
-        "link": "superstate.json"
+        "link": "logic/superstate.json"
       },
       "name": "superstate",
       "entries": [

@@ -7,14 +7,9 @@ const express = require('express');
 
 const process = require('process');
 const cluster = require('cluster');
-const config  = require('./config/config.json');
-config.maxnumbers = require('os').cpus().length;
-
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
-
-//const cMaster = require('./server/master')
-const cMaster = require('./dist/server/master')
+const cMaster = require('./server/master')
+//const cMaster = require('./dist/server/master')
 
 const log4js = require('log4js');
 const logger = log4js.getLogger('cluster');
@@ -22,13 +17,24 @@ logger.level = 'trace';
 
 const PORT = process.env.PORT || 5555
 
+//const argv = process.argv.slice(2).reduce((a,b)=> (a[b]='',a),{});
+const dir = process.argv.slice(2)[0]
+logger.warn(`Command line arguments: `, dir)
+
+const config  = require(dir+'config/config.json');
+const swaggerDocument = require(dir+'swagger.json');
+config.maxnumbers = require('os').cpus().length;
+
+const folder = (dir === './') ? __dirname + '/public/dist' : __dirname + '/' + dir +'public/dist'
+logger.error(`Frontend public folder: `,folder)
+
 if (cluster.isMaster) {
     const master = new cMaster(cluster,config)
 
     express()
         .use(bodyParser.urlencoded({ extended: false }))
         .use(bodyParser.json())           
-        .use(express.static(__dirname + '/public/dist'))  // Set public folder as root
+        .use(express.static(folder))  // Set public folder as root
 //        .get('/', (req, res) => res.redirect('/api'))    
         .use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
         .get('/version', (req, res) => {
@@ -230,8 +236,8 @@ if (cluster.isMaster) {
             logger.trace(`Web Server now running on port`, PORT);
         });
 
-    master.init()
-    master.test()
+    master.init(dir)
+    master.update(dir)
 
 } else if (cluster.isWorker) {
     logger.trace(`Worker: ${process.pid} start`);

@@ -4,8 +4,9 @@
   "description": "Node adaptive worker engine for node.js",
   "main": "index.js",
   "scripts": {
-    "test": "node cluster",
-    "secure": "javascript-obfuscator ./server --output ./dist --compact true --self-defending false"
+    "test": "node cluster ./",
+    "prod": "node ./dist/cluster ../",
+    "secure": "javascript-obfuscator cluster.js --output ./dist --compact true --self-defending false & javascript-obfuscator ./server --output ./dist --compact true --self-defending false"
   },
   "repository": {
     "type": "git",
