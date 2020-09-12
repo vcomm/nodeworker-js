@@ -15,8 +15,16 @@ RUN npm install
 # копируем исходный код
 COPY . .
 
+# Compile backend
+RUN echo compile backend
 RUN npm run secure
 RUN rm -r ./server
+RUN rm cluster.js
+
+# Compile frontend
+RUN echo compile frontend
+RUN npm run build
+RUN rm -r ./public/src
 
 EXPOSE 5555
-CMD [ "node", "cluster.js" ]
+CMD [ "node", "./dist/cluster.js", "../" ]

@@ -2,8 +2,14 @@
   "name": "nodeworker",
   "version": "1.0.0",
   "description": "Node adaptive worker engine for node.js",
-  "main": "index.js",
+  "main": "cluster.js",
   "scripts": {
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "stats": "webpack --json > stats.json && webpack-bundle-analyzer stats.json",
+    "blint": "npx eslint cluster.js server/",
+    "flint": "npx eslint public/src/js/",
     "test": "node cluster ./",
     "prod": "node ./dist/cluster ../",
     "secure": "javascript-obfuscator cluster.js --output ./dist --compact true --self-defending false & javascript-obfuscator ./server --output ./dist --compact true --self-defending false"
@@ -13,7 +19,10 @@
     "url": "git+https://github.com/vcomm/nodeworker-js.git"
   },
   "keywords": [
-    "worker"
+    "worker",
+    "dafsm",
+    "cluster",
+    "provisioning"
   ],
   "author": "Yakov Liskoff",
   "license": "MIT",
@@ -26,10 +35,31 @@
     "express": "^4.17.1",
     "log4js": "^6.3.0",
     "swagger-ui-express": "^4.1.4",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.0",
+    "@fortawesome/fontawesome-free": "^5.14.0",
+    "bootstrap": "^4.5.2",
+    "codemirror": "^5.56.0",
+    "file-saver": "^2.0.2",
+    "jointjs": "^3.2.0",
+    "jquery": "^3.5.1",
+    "jsoneditor": "^9.0.4",
+    "normalize.css": "^8.0.1",
+    "popper.js": "^1.16.1"
   },
   "devDependencies": {
     "eslint": "^7.8.1",
-    "javascript-obfuscator": "^2.1.0"
+    "javascript-obfuscator": "^2.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "css-loader": "^4.2.1",
+    "css-minimizer-webpack-plugin": "^1.1.2",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^0.11.0",
+    "style-loader": "^1.2.1",
+    "terser-webpack-plugin": "^4.1.0",
+    "webpack": "^4.44.1",
+    "webpack-bundle-analyzer": "^3.8.0",
+    "webpack-cli": "^3.3.12"
   }
 }

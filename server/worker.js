@@ -71,10 +71,10 @@ class aWorker extends Message {
 
 module.exports = aWorker
 
-new aWorker({
+new aWorker({/*
     version: (msg) => { 
         return new Promise((resolve) => resolve({ version: `versions 1.0`})) 
-    },
+    },*/
     evlist: (msg,  self) => {
         logger.trace(`Worker: ${process.pid} | get events collection:`); 
         return new Promise((resolve) => resolve(self.engine.emitOn())) 

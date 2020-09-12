@@ -26,7 +26,7 @@ const optimization = () => {
 }
 
 module.exports = {
-    context: path.resolve(__dirname, 'src'),
+    context: path.resolve(__dirname, 'public/src'),
     mode: 'development',
     entry: {
         main: './js/index.js'
@@ -34,7 +34,7 @@ module.exports = {
     output: {
 //        filename: '[name].[contenthash].js',
         filename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'public/dist')
     },
     resolve: {
         extensions: ['.js','.css'],
@@ -52,8 +52,8 @@ module.exports = {
         new CopyWebpackPlugin({
         patterns: [
             {
-                from: path.resolve(__dirname,'src/img/eyes-on.png'),
-                to: path.resolve(__dirname,'dist')
+                from: path.resolve(__dirname,'public/src/img/eyes-on.png'),
+                to: path.resolve(__dirname,'public/dist')
             }
         ]}),
         new MiniCssExtractPlugin({
