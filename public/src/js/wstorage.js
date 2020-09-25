@@ -20,16 +20,22 @@ export default class wStorage {
         };          
     }
 
-    set(value) {
-        this._storage_.setItem(this._key_, value)
+    set(value,key) {
+        this._storage_.setItem(key ? key : this._key_, value)
     }
 
-    get() {
-        return this._storage_.getItem(this._key_)
+    get(key) {
+        return this._storage_.getItem(key ? key : this._key_)
     }
 
-    remove() {
-        this._storage_.removeItem(this._key_)
+    retrive(cblk) {
+        return Object.keys(this._storage_).map((key) => {
+            return cblk(key,this.get(key))
+        })
+    }
+
+    remove(key) {
+        this._storage_.removeItem(key ? key : this._key_)
     }
 
     clear() {

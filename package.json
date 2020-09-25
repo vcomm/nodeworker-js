@@ -31,20 +31,22 @@
   },
   "homepage": "https://github.com/vcomm/nodeworker-js#readme",
   "dependencies": {
-    "dafsm": "git+https://github.com/vcomm/dafsm-node.git",
-    "express": "^4.17.1",
-    "log4js": "^6.3.0",
-    "swagger-ui-express": "^4.1.4",
-    "uuid": "^8.3.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "bootstrap": "^4.5.2",
+    "chart.js": "^2.9.3",
     "codemirror": "^5.56.0",
+    "dafsm": "git+https://github.com/vcomm/dafsm-node.git",
+    "express": "^4.17.1",
     "file-saver": "^2.0.2",
     "jointjs": "^3.2.0",
     "jquery": "^3.5.1",
     "jsoneditor": "^9.0.4",
+    "log4js": "^6.3.0",
+    "moment": "^2.28.0",
     "normalize.css": "^8.0.1",
-    "popper.js": "^1.16.1"
+    "popper.js": "^1.16.1",
+    "swagger-ui-express": "^4.1.4",
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
     "eslint": "^7.8.1",

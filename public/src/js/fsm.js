@@ -142,13 +142,13 @@ class jsonFSA {
         }
         this.statesDict = {}
         this.stroke = [
-            '#884EA0',
-            '#CB4335',
-            '#2471A3',
+            '#d0c4f4',
+            '#f46b6d',
+            '#5d8dbe',
             '#F4D03F',
-            '#138D75',
-            '#E67E22',
-            '#5DADE2'
+            '#66bc84',
+            '#e6b362',
+            '#80c5e2'
         ]
     }   
     get() { return this.pattern }
@@ -183,10 +183,10 @@ class jsonFSA {
         }                       
     }
     addstart(name, code) {
-        this.pattern.start.push((new jsonAction(name, code)).get())  
+        this.pattern.start = (new jsonAction(name, code)).get()  
     }
     addstop(name, code) {
-        this.pattern.stop.push((new jsonAction(name, code)).get())  
+        this.pattern.stop = (new jsonAction(name, code)).get()
     }
     genColor() {        
         const letters = '0123456789ABCDEF';
@@ -207,7 +207,7 @@ class codeEditor {
     constructor(elcode,cblk) {
         this.editor = CodeMirror(elcode,{
 //            lineNumbers: true,
-            matchBrackets: true,
+            lineWrapping: true,
             mode: "text/javascript"
         });
         this.editor.on('change',cblk);
@@ -216,17 +216,36 @@ class codeEditor {
             console.log('Change Editor code',cMirror.getValue());
         });   
 */             
-        this.editor.setSize("100%", "90%");         
+        this.editor.setSize("100%", "90%");
     }
 
     set(value,bfree) {
-        bfree ? this.editor.setValue(value) : this.editor.setValue(this.formatJson(JSON.stringify(value)));
+        bfree ? this.editor.setValue(this.formatCode(value)) : this.editor.setValue(this.formatJson(JSON.stringify(value)));
     }
     get() {
         return this.editor.getValue()
     }
     repeat(s, count) {
         return new Array(count + 1).join(s);
+    }
+    formatCode(code) {
+        let newCode     = "",
+            tab         = "    ",
+            indentLevel = 0,
+            currentChar = null;
+        
+        for (let i = 0, il = code.length; i < il; i += 1) {
+            currentChar = code.charAt(i);
+             switch(currentChar) {
+                case ';':
+                    newCode += ";\n" + this.repeat(tab, indentLevel);
+                    break;                 
+                 default:
+                    newCode += currentChar + this.repeat(tab, indentLevel);
+                    break;
+             }
+        }
+        return newCode
     }
     formatJson(json) {
         var i           = 0,
@@ -726,21 +745,63 @@ export default class umlFsm extends jsonFSA {
         this.graph.addCell(trans) 
     }
     restoreGraph(states) {
-        for (let [key, state] of Object.entries(states)) {
-            if (state.hasOwnProperty("model"))
-                this.restoreState(state)
-        }     
-        for (let [key, state] of Object.entries(states)) {
-            if (state && state.hasOwnProperty("transitions")) {
-                state.transitions.forEach(trans => {
-                    if (trans.hasOwnProperty("model"))
-                        this.restoreTrans(
-                            trans.model,
-                            this.statesDict[state.key],
-                            trans.nextstatename,
-                            trans.key)
-                })                        
+        if (states instanceof Object) {
+            for (let [key, state] of Object.entries(states)) {
+                if (state.hasOwnProperty("model"))
+                    this.restoreState(state)
+            }     
+            for (let [key, state] of Object.entries(states)) {
+                if (state && state.hasOwnProperty("transitions")) {
+                    state.transitions.forEach(trans => {
+                        if (trans.hasOwnProperty("model"))
+                            this.restoreTrans(
+                                trans.model,
+                                this.statesDict[state.key],
+                                trans.nextstatename,
+                                trans.key)
+                    })                        
+                } 
             } 
-        }    
+        } else {
+            console.warn(`Cannon Restore old style format`)
+        }  
+    }
+    printAtomsList(states,start,stop) {
+        let lstAtoms = [start,stop]
+
+        for(let key of Object.keys(states)) {
+            let state = states[key];
+            if (state.hasOwnProperty("exits")) {
+                state.exits.forEach(action => {
+                    lstAtoms.push(action)
+                })
+            }
+            if (state.hasOwnProperty("stays")) {
+                state.stays.forEach(action => {
+                    lstAtoms.push(action)
+                })
+            }
+            if (state.hasOwnProperty("entries")) {
+                state.entries.forEach(action => {
+                    lstAtoms.push(action)
+                })
+            }
+            if (state.hasOwnProperty("transitions")) {
+                state.transitions.forEach(trans => {
+                    if (trans.hasOwnProperty("triggers")) {
+                        trans.triggers.forEach(trig => {
+                            lstAtoms.push(trig)
+                        })
+                    }
+                    if (trans.hasOwnProperty("effects")) {
+                        trans.effects.forEach(eff => {
+                            lstAtoms.push(eff)
+                        })
+                    }
+                })
+            }
+        }
+
+        return lstAtoms
     }
 }

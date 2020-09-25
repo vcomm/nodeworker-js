@@ -34,8 +34,7 @@ if (cluster.isMaster) {
     express()
         .use(bodyParser.urlencoded({ extended: false }))
         .use(bodyParser.json())           
-        .use(express.static(folder))  // Set public folder as root
-//        .get('/', (req, res) => res.redirect('/api'))    
+        .use(express.static(folder))  // Set public folder as root   
         .use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
         .get('/version', (req, res) => {
             res.status(200).json({ 
@@ -202,21 +201,23 @@ if (cluster.isMaster) {
             })
         })   
         .get('/resources', async (req, res) => {   
-            const metrics = await Promise.all(master._wpool_.map(
+            let workProcess = master.resources
+            const resources = await Promise.all(master._wpool_.map(
                 async (id) => await master.request({ 
                     head: {
                         target  : id,
                         origin  : 'master',
-                        request : 'metrics'
+                        request : 'resources'
                     },
                     body: "The request by path /metrics"
                 })
                 .then(result => { 
                     logger.trace(`(${id})->`,result.data.body) 
-                    return { worker: id, metric: result.data.body}
+                    workProcess[id].resources = result.data.body
+                    return { worker: id, resources: result.data.body}
                 })
             ));            
-            res.json({ service: `Node Worker get resources metrics for all workers`, responce: { workers: master.resources, clients: Object.keys(master.clients), metrics: metrics }}) 
+            res.json({ service: `Node Worker get resources metrics for all workers`, responce: { workers: workProcess, clients: Object.keys(master.clients)/*, resources: resources*/ }}) 
         })
         .get('/metrics/:workerid', (req, res) => {   
             master.request({ 

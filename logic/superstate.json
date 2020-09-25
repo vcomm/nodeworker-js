@@ -24,6 +24,7 @@
       ],
       "transitions": [
         {
+          "key": "T:init=>try",
           "nextstatename": "try",
           "triggers": [
             {
@@ -36,9 +37,76 @@
               "name": "fnGoto",
               "func": "console.debug(`: Run fnGoto:`);"
             }
-          ]
+          ],
+          "model": {
+            "type": "uml.Transition",
+            "source": {
+                "id": "c728508b-f739-4d06-b115-f71d718fdce3"
+            },
+            "target": {
+                "id": "734f8c96-21d1-4823-9a95-2a7d061d72f6"
+            },
+            "labels": [
+                {
+                    "position": {
+                        "distance": 0.5,
+                        "offset": 10,
+                        "args": {
+                            "keepGradient": true,
+                            "ensureLegibility": true
+                        }
+                    },
+                    "attrs": {
+                        "text": {
+                            "text": "T:init=>try",
+                            "fontWeight": "bold"
+                        }
+                    }
+                }
+            ],
+            "id": "8fc5f05b-840b-4357-af94-f4ad800649c7",
+            "z": 4,
+            "attrs": {
+                ".connection": {
+                    "stroke": "#4b4a67",
+                    "fill": "none",
+                    "stroke-linejoin": "round",
+                    "stroke-width": "2"
+                },
+                ".marker-arrowheads": {
+                    "display": "none"
+                }
+            }
+          }
         }
-      ]
+      ],
+      "model": {
+        "type": "uml.StartState",
+        "size": {
+            "width": 30,
+            "height": 30
+        },
+        "position": {
+            "x": 500,
+            "y": 95
+        },
+        "angle": 0,
+        "id": "c728508b-f739-4d06-b115-f71d718fdce3",
+        "z": 1,
+        "attrs": {
+            "circle": {
+                "fill": "#4b4a67",
+                "stroke": "none"
+            },
+            "text": {
+                "font-size": 15,
+                "fill": "black"
+            },
+            "rect": {
+                "fill": "rgba(48, 208, 198, 0.1)"
+            }
+        }
+      }
     },
     {
       "key": "try",
@@ -51,6 +119,7 @@
       ],
       "transitions": [
         {
+          "key": "T:try=>final",
           "nextstatename": "final",
           "triggers": [
             {
@@ -63,7 +132,47 @@
               "name": "fnGoto",
               "func": "console.debug(`: Run fnGoto:`);"
             }
-          ]
+          ],
+          "model": {
+            "type": "uml.Transition",
+            "source": {
+                "id": "734f8c96-21d1-4823-9a95-2a7d061d72f6"
+            },
+            "target": {
+                "id": "ae3461a7-6fa4-4196-a281-7834c605a142"
+            },
+            "labels": [
+                {
+                    "position": {
+                        "distance": 0.5,
+                        "offset": 10,
+                        "args": {
+                            "keepGradient": true,
+                            "ensureLegibility": true
+                        }
+                    },
+                    "attrs": {
+                        "text": {
+                            "text": "T:try=>final",
+                            "fontWeight": "bold"
+                        }
+                    }
+                }
+            ],
+            "id": "2ad82dee-05cc-48bd-99c4-96818a3f1b66",
+            "z": 5,
+            "attrs": {
+                ".connection": {
+                    "stroke": "#16E047",
+                    "fill": "none",
+                    "stroke-linejoin": "round",
+                    "stroke-width": "2"
+                },
+                ".marker-arrowheads": {
+                    "display": "none"
+                }
+            }
+          }
         },
         {
           "nextstatename": "try",
@@ -80,7 +189,50 @@
             }
           ]
         }
-      ]
+      ],
+      "model": {
+        "type": "uml.State",
+        "name": "try",
+        "events": [
+            "{\"entries\":0}",
+            "{\"stays\":1}",
+            "{\"exits\":0}"
+        ],
+        "position": {
+            "x": 438,
+            "y": 222
+        },
+        "size": {
+            "width": 150,
+            "height": 80
+        },
+        "angle": 0,
+        "id": "734f8c96-21d1-4823-9a95-2a7d061d72f6",
+        "z": 2,
+        "attrs": {
+            ".uml-state-body": {
+                "fill": "rgba(48, 208, 198, 0.1)",
+                "stroke": "#16E047"
+            },
+            ".uml-state-separator": {
+                "stroke": "#16E047",
+                "d": "M 0 20 L 150 20"
+            },
+            ".uml-state-name": {
+                "text": "try"
+            },
+            ".uml-state-events": {
+                "text": "{\"entries\":0}\n{\"stays\":1}\n{\"exits\":0}"
+            },
+            "rect": {
+                "fill": "yellow"
+            },
+            "text": {
+                "fill": "black",
+                "font-size": 15
+            }
+        }
+      }
     },
     {
       "key": "final",
@@ -90,7 +242,37 @@
           "name": "fnGoodbye",
           "func": "console.debug(`: Run fnGoodbye:`);"
         }
-      ]
+      ],
+      "model": {
+        "type": "uml.EndState",
+        "size": {
+            "width": 30,
+            "height": 30
+        },
+        "position": {
+            "x": 498,
+            "y": 421
+        },
+        "angle": 0,
+        "id": "ae3461a7-6fa4-4196-a281-7834c605a142",
+        "z": 3,
+        "attrs": {
+            ".outer": {
+                "stroke": "#4b4a67",
+                "stroke-width": 2
+            },
+            ".inner": {
+                "fill": "#4b4a67"
+            },
+            "rect": {
+                "fill": "rgba(48, 208, 198, 0.1)"
+            },
+            "text": {
+                "fill": "black",
+                "font-size": 15
+            }
+        }
+      }
     }
   ]
 }

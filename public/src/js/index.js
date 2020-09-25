@@ -17,6 +17,7 @@ import * as JSONEditor from 'jsoneditor'
 import wStorage from '../js/wstorage'
 import wProject from '../js/project'
 import umlFsm from '../js/fsm'
+import nodeTarget from '../js/cluster'
 
 let uml = null;
 let editor = null;
@@ -24,9 +25,73 @@ let lstorage = null;
 let sstorage = null;
 let project = null;
 
+const cluster = new nodeTarget('/');
+
+const monitor = (function (target) {
+    const elem = $(target)
+    return {
+        prnInit: (msg)=>{
+            elem
+             .append(`<a href="#!" class="list-group-item list-group-item-action">${msg}</a>`)
+             .scrollTop(250);
+        },
+        prnStepLog: (msg,worker)=>{
+            let dt = new Date()
+            const count = parseInt(elem.attr("count"))+1
+            dt = dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds()
+            elem
+             .append(`
+            <div class="card">
+                <div class="card-header" role="tab" id="heading${count}">
+                <h5 class="mb-0" ondblclick="">
+                    <a data-toggle="collapse" href="#collapse${count}" aria-expanded="true" aria-controls="collapse${count}">
+                    ${dt} | [#${worker}] STEP-${count}: State(${msg.currState.key}) => State(${msg.nextState.key})
+                    </a>
+                </h5>
+                </div>
+                <div id="collapse${count}" class="collapse" role="tabpanel" aria-labelledby="heading${count}">
+                <div class="card-body" style="padding: 0.25rem;">
+                           ${monitor.prnExecSeq(msg)}
+                </div>
+                </div>
+            </div>`)
+             .attr("count",`${count}`)
+        },
+        prnExecSeq: (msg)=>{
+            let ret = `<ul style="color:green">`
+            const exits = msg.currState.exits ? msg.currState.exits : []
+            const entries = msg.nextState.entries ? msg.nextState.entries : []
+            let triggers = [], effects = []
+
+            msg.currState.transitions.forEach((trans) => {
+                trans.triggers.forEach((trig) => {
+                    triggers.push(trig)
+                })
+                trans.effects.forEach((eff) => {
+                    effects.push(eff)
+                })                
+            });            
+
+            triggers.forEach((item, index, array) => {
+                ret +=`<li>${item.name}</li>`
+            });            
+            exits.forEach((item, index, array) => {
+                ret +=`<li>${item.name}</li>`
+            });
+            effects.forEach((item, index, array) => {
+                ret +=`<li>${item.name}</li>`
+            });
+            entries.forEach((item, index, array) => {
+                ret +=`<li>${item.name}</li>`
+            });            
+            ret +=`</ul>`
+            return ret
+        }
+    }
+})("div#monitor")        
 
 window.onbeforeunload = function(e) {
-    lstorage.set(JSON.stringify(uml.get()))
+    lstorage.set(JSON.stringify(uml.jsonedit.get()/*uml.get()*/))
     e.returnValue = `Goodbye, Come again`;
     return `Goodbye, Come again`;
 };
@@ -45,11 +110,13 @@ $(function() {
        }        
     })
     project = new wProject('myproj')
-    lstorage = new wStorage(true,'dafsm',(data)=>{ uml.jsonedit.set(JSON.parse(data))})
+    lstorage = new wStorage(true,'dafsm',(data)=>{ 
+        uml.jsonedit.set(JSON.parse(data))
+    })
     lstorage.init()
-//    sstorage = new wStorage(false,'atoms',(data)=>{})
-    uml = new umlFsm('div#graph','tst','project',{
-        elem: document.getElementById("Code"),
+    sstorage = new wStorage(false,'workers',(data)=>{})
+    uml = new umlFsm('div#graph-body','tst','project',{
+        elem: document.getElementById("code-body"),
         cblk: (cMirror) => {
             const code = cMirror.getValue()
             const funcname = $('a#code-edit-tab').children('b').text();
@@ -64,9 +131,86 @@ $(function() {
     uml.init(initJSONeditor("jsoneditor"))
     const restore = JSON.parse(lstorage.get())
     if (restore) {
-        uml.restoreGraph(restore.states) 
         uml.jsonedit.set(restore)
+        uml.restoreGraph(restore.states) 
+        uml.printAtomsList(restore.states,restore.start,restore.stop).forEach((atom) => showAtom(atom.name,atom.func))
     } 
+
+    // Connect to cluster
+    cluster.subscribe((json) => {
+        console.log(`Subscribe: `,json)
+
+        cluster.monitor(
+            (msg)=>monitor.prnInit(msg),
+            (msg,process)=>monitor.prnStepLog(msg,process),
+            (msg,worker)=>{ console.info(`Health worker ${worker} Chart`, msg)})
+
+        // Get Target's process logics
+        cluster.request({        
+            method  : 'get',
+            service : 'resources',
+            params  : []
+        },json => {
+            console.log(`Target process resources: `,json)
+            const workerlist = $("ul#clusterWorker")
+//            sstorage.set(JSON.stringify(json.workers))
+            for (let [key, worker, table, color] of Object.entries(json.workers)) {
+//                status = (worker.status === 'used') ? 'list-group-item-info' : 'list-group-item-warning'                
+                worker.color = color = uml.stroke[key]
+                table = worker.resources.logics.map((item,i)=>{
+                    return `
+                    <tr id="logic-${key}-${item}">
+                    <th scope="row">
+                        <div class="form-check">
+                            <input class="form-check-input position-static" type="radio" name="selLogic" id="" value="${i}" onclick="selectLogicByName('td#${key}-${item} > button.logicAction')">
+                        </div>
+                    </th>
+                    <td>${item}</td>
+                    <td id="${key}-${item}">
+                        <button type="button" class="btn btn-success logicAction" onclick="loadLogic('${item}','${key}')" title="Load Logic" disabled><i class="fas fa-download"></i></button>
+                        <button type="button" class="btn btn-info logicAction" onclick="activeLogic('${item}','${key}')" title="Activate Logic" disabled><i class="fas fa-exclamation-triangle"></i></button>
+                        <button type="button" class="btn btn-primary logicAction" onclick="stepLogic('${key}','step')" title="Run Step Logic" disabled><i class="fas fa-step-forward"></i></button>
+                        <button type="button" class="btn btn-warning logicAction" onclick="stepLogic('${key}',1000,this)" title="Exec Loop Logic" disabled><i class="fas fa-play"></i></button>                        
+                        <button type="button" class="btn btn-danger logicAction" onclick="delLogic('${item}','${key}')" title="Delete Logic" disabled><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`
+                })
+                workerlist.append(`
+                <li class="list-group-item list-group-item-action nav-item dropdown" data-toggle="collapse" data-target="#accordion-${key}" class="clickable" style="display: flex;background-color: ${color};">
+                <b>Worker #${key} pid #${worker.pid}[${worker.status}]</b> 
+                <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="padding-top: initial;margin-left: auto;">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" onclick="" >Get Logics</a>
+                  <a class="dropdown-item" href="#" onclick="">Get Events</a>
+                  <a class="dropdown-item" href="#" onclick="getMetrics('${key}')" title="Get Worker Metrics">Get Metrics</a>
+                  <a class="dropdown-item" href="#" onclick="attachLogic('${key}')" title="Attach Logic to Worker">Attach Logic</a>
+                  <a class="dropdown-item" href="#" onclick="eventCreate('${key}')" title="Create Worker Event">Create Event</a>
+                  <a class="dropdown-item" href="#" onclick="eventDelete('${key}')" title="Delete Worker Event">Delete Event</a>
+                </div>
+                </li>
+                <div id="accordion-${key}" class="collapse">
+                    <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Logic</th>
+                            <th scope="col">Operation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listProcess-${key}">${table}</tbody>
+                    </table>
+                </div>                
+                `)
+            }    
+            cluster.init(document.getElementById('Health').getContext('2d'),json.workers)
+            $('a#cluster-health-tab').click()     
+            openNav()                       
+        })
+    })
+
+    $('[data-toggle="tooltip"]').tooltip()
 
     $('#paper-tab a').on('click', function (e) {
         e.preventDefault()
@@ -74,8 +218,14 @@ $(function() {
         $(this).tab('show')
         if (tab === 'Graph') {
             $('div#graph').css({display :'block'})
-            $('div#Code').css({display :'none'})            
+            $('div#Code').css({display :'none'})     
+            $('div#Cluster').css({display :'none'})        
+        } else if(tab === 'Cluster') {
+            $('div#graph').css({display :'none'})
+            $('div#Code').css({display :'none'})     
+            $('div#Cluster').css({display :'block'})     
         } else {
+            $('div#Cluster').css({display :'none'}) 
             $('div#graph').css({display :'none'})
             $('div#Code').css({display :'block',
                 width: $('div#paper-tabContent').width(),
@@ -85,30 +235,19 @@ $(function() {
         console.log(`Show paper tab: ${tab}`)
       })
 
-    $('.CodeMirror').css({'font-size' : '24px'})
+    $('.CodeMirror').css({'font-size' : '18px'})
     lanchContextMenu("#paper")    
 
     $("input#projectinput").on("change", (e) => {
         const file = e.target.files[0];
         console.log(`Load Project File: ${file.name}, size: ${file.size}`)
         project.read(file,(result)=>{
-
+            const proj = JSON.parse(result)
+            console.debug(`Read Project: `,proj)
+            proj.dafsm.forEach((fsm) => {
+                pushLogicToStore($(`tbody#listLogics`),fsm.logic,fsm.id)
+            })
         })
-        /*
-        project.read(file,(result)=>{
-            fetch('/decrypt', {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: result
-            })  
-                .then(res => res.json()) 
-                .then(dec => {             
-                    console.log(dec)
-                })
-                .catch(console.error.bind(console)); 
-        })*/
     });
 
 //    $('[data-toggle="popover"]').popover()
@@ -244,8 +383,8 @@ function initJSONeditor(id) {
     // JSON Editor
     let container = document.getElementById(id);
     let options = {
-        mode: 'tree',
-        modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+        mode: 'view',
+        modes: ['view', 'form'], // allowed modes
         onError: function (err) {
             alert(err.toString());
         },
@@ -349,7 +488,8 @@ window.editCode = function(elem) {
     const cardHeader = $(elem).parent().siblings('div.card-header')
     const fname = cardHeader.children('h5').children('a').text();
     $('a#code-edit-tab').children('b').text(fname);
-    $('a#code-edit-tab').tab('show');   
+//    $('a#code-edit-tab').tab('show');  
+    $('a#code-edit-tab').click(); 
     $('div#graph').css({display :'none'})
     $('div#Code').css({display :'block',
         width: $('div#paper-tabContent').width(),
@@ -392,9 +532,22 @@ window.updateFuncBody = function(elem) {
     $(elem).text(code)
 }
 
+window.attachFuncTo = function(name) {
+    switch(name) {
+        case 'start':
+            uml.addstart(`fn_${name}`, uml.editor.get())
+            break
+        case 'stop':
+            uml.addstop(`fn_${name}`, uml.editor.get())
+            break
+    }
+    lstorage.set(JSON.stringify(uml.get()))
+    uml.jsonedit.set(JSON.parse(lstorage.get()))
+}
+
 window.keepFuncJson = function(elem) {
     $(elem).children('a').attr('contenteditable',false)
-    $(elem).parent().css({ 'background-color': 'lightgreen' })
+//    $(elem).parent().css({ 'background-color': 'lightgreen' })
     const cardHeader = $(elem).parent('div.card-header')
     
 //    const participant = cardHeader.attr('data-content')
@@ -402,17 +555,17 @@ window.keepFuncJson = function(elem) {
     const funcName = $(elem).children('a').text()
     const funcCode = cardHeader.parent().find('.card-body').text()   
     const typeAction = $('a#add-action-tab').attr('title')
-    console.log(`FuncName ${funcName}, FuncCode ${funcCode}`)
+    console.log(`Type: [${typeAction}] (FuncName ${funcName}, FuncCode ${funcCode})`)
 
     uml.addAction(typeAction,funcName,funcCode)
 
     lstorage.set(JSON.stringify(uml.get()))
     uml.jsonedit.set(JSON.parse(lstorage.get()))
-    
+    /*
     setTimeout(()=>{
         $(elem).parent().css({ 'background-color':'rgba(0,0,0,.03)' })
 //        cardHeader.popover('hide')
-    },3000)    
+    },3000)*/    
     updateAtomNote(cardHeader,typeAction)
 }
 
@@ -420,21 +573,57 @@ window.newAction = function(elem) {
     const fname = `fn_${Math.random().toString(20).substr(2, 6)}`
     var count = parseInt($("div#codecollect").attr("count"))+1
     $("div#codecollect")
-    .append(`
+//    .append(`
+    .prepend(`
     <div class="card" style="margin: 10px;">
-    <div class="card-header" role="tab" id="card-${fname}" data-toggle="tooltip" data-placement="top"
+    <div class="card-header" role="tab" id="card-${fname}" data-toggle="tooltip" data-placement="left"
     data-content="[]">
-      <h5 class="mb-0" ondblclick="keepFuncJson(this)">
-          <a data-toggle="collapse" href="#collapse${fname}" aria-expanded="true" aria-controls="collapscount" contenteditable="false">${fname}</a>
+      <h5 class="mb-0" ondblclick="keepFuncJson(this)" style="display: flex;">
+        <a data-toggle="collapse" href="#collapse${fname}" aria-expanded="true" aria-controls="collapscount" contenteditable="false">${fname}</a>
+        <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="margin-left: auto;">
+          <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+        </a>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="delAtomAction('card-${fname}')"><i class="fas fa-trash-alt"></i>   Delete</a>
+        </div>
       </h5>
     </div>
-    <div id="collapse${fname}" class="collapse" role="tabpanel" aria-labelledby="${fname}">
-      <div class="card-body" id="body-${fname}" onclick="editCode(this)"> console.debug(': Run fn_${fname}:'); return true; </div>
+    <div id="collapse${fname}" class="collapse show" role="tabpanel" aria-labelledby="${fname}">
+      <div class="card-body" id="body-${fname}" onclick="editCode(this)"> console.debug(': Run ${fname}:'); return true; </div>
     </div>
     </div> `)
     .attr("count",`${count}`)
     .scrollTop(250);
     $('a#code-collect-tab').tab('show')
+    $('a#code-edit-tab').click()
+}
+
+function showAtom(fname, func) {
+    var count = parseInt($("div#codecollect").attr("count"))+1
+    $("div#codecollect")
+    .append(`
+    <div class="card" style="margin: 10px;">
+    <div class="card-header" role="tab" id="card-${fname}" data-toggle="tooltip" data-placement="top"
+    data-content="[]">
+      <h5 class="mb-0" ondblclick="keepFuncJson(this)" style="display: flex;">
+        <a data-toggle="collapse" href="#collapse${fname}" aria-expanded="true" aria-controls="collapscount" contenteditable="false">${fname}</a>
+        <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="margin-left: auto;">
+          <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+        </a>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="delAtomAction('card-${fname}')"><i class="fas fa-trash-alt"></i>   Delete</a>
+        </div>
+      </h5>
+    </div>
+    <div id="collapse${fname}" class="collapse" role="tabpanel" aria-labelledby="${fname}">
+      <div class="card-body" id="body-${fname}" onclick="editCode(this)"> ${func} </div>
+    </div>
+    </div> `)
+    .attr("count",`${count}`)
+}
+
+window.delAtomAction = (elem)=> {
+    $(`div#${elem}`).parent().remove()
 }
 
 window.showTab = (selector) => {
@@ -448,7 +637,8 @@ window.disConnect = (elem) => {
     $('a.target').addClass("disabled")    
     $("tbody#listLogics").empty()
 }
-
+// ---------------------- Cluster REST API operation --------------
+/*
 window.getConnect = (elem) => {
     const target = $('input[aria-label="Target"]').val()
     const port   = $('input[aria-label="Port"]').val()
@@ -553,92 +743,147 @@ window.getLogicByName = (elem) => {
         })
         .catch(console.error.bind(console)); 
 }
+*/
 
-window.attachLogic = () => {
-    const target = $('input[aria-label="Target"]').val()
-    const port   = $('input[aria-label="Port"]').val()
-    const reqConfig = {
+window.attachLogic = (worker) => {
+    const logic = uml.get()
+    cluster.request({        
         method  : 'post',
         service : 'attach',
-        params  : [],
-        body    : uml.get()
-    }
-    fetch(`/3rdparty/${target}:${port}`, {
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body:JSON.stringify(reqConfig)
-    })  
-        .then(res => res.json())
-        .then(json => {             
-            console.log(json)
-            getLogicsList()
-        })
-        .catch(console.error.bind(console)); 
+        params  : [worker],
+        body    : logic
+    }, (json) => {
+        const table = $(`tbody#listProcess-${worker}`)    
+        addRowtoTable(table,worker,logic.id)
+    })        
 }
 
-window.delLogic = (lname) => {
-    const target = $('input[aria-label="Target"]').val()
-    const port   = $('input[aria-label="Port"]').val()
-    const reqConfig = {
+window.loadLogic = (sname,worker) => {
+    cluster.request({        
+        method  : 'get',
+        service : 'logics',
+        params  : [sname,worker]
+    }, (json) => {
+        $('a#graph-svg-tab').click()  
+        uml.jsonedit.set(json)
+        uml.graph.clear()
+        uml.restoreGraph(json.states)   
+        uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func))      
+    })
+}
+
+window.activeLogic = (sname,worker) => {
+    cluster.request({        
+        method  : 'get',
+        service : 'activate',
+        params  : [sname,worker]
+    }, (json) => {
+       
+    })
+}
+
+window.delLogic = (sname,worker) => {
+    cluster.request({        
         method  : 'delete',
         service : 'logic',
-        params  : [lname]
-    }
-    const handle = (json) => {
-        $(`tr#${lname}`).remove()
-    }
-    fetch(`/3rdparty/${target}:${port}`, {
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body:JSON.stringify(reqConfig)
-    })  
-        .then(res => res.json())
-        .then(json => {             
-            console.log(json)
-            handle(json.responce) 
-        })
-        .catch(console.error.bind(console));
+        params  : [sname,worker]
+    }, (json) => {
+        $(`#logic-${worker}-${sname}`).remove()        
+    })
 }
 
-window.stepLogic = (lname) => {
-    const target = $('input[aria-label="Target"]').val()
-    const port   = $('input[aria-label="Port"]').val()
-    const reqConfig = {
+window.stepLogic = (worker,mode,elem) => {
+    cluster.request({        
         method  : 'get',
         service : 'exec',
-        params  : ['dafsm']
-    }
-    const handle = (json) => {
-        
-    }
-    fetch(`/3rdparty/${target}:${port}`, {
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body:JSON.stringify(reqConfig)
-    })  
-        .then(res => res.json())
-        .then(json => {             
-            console.log(json)
-            handle(json.responce) 
-        })
-        .catch(console.error.bind(console));
+        params  : ['dafsm',worker,mode,cluster.suidGet()]
+    }, (json) => {
+        if (mode !== 'step') {
+            const iconmode = $(elem).children()
+            if (iconmode.hasClass( "fa-play" )) {
+                iconmode.removeClass("fa-play")
+                iconmode.addClass("fa-stop")
+            } else if (iconmode.hasClass( "fa-stop" )) {
+                iconmode.removeClass("fa-stop")
+                iconmode.addClass("fa-play")                
+            }
+        }
+    })
+}
 
+window.selectLogicByName = (selector) => {
+    $('button.logicAction').prop( "disabled", true )  
+    $(selector).prop( "disabled", false )      
+}
+
+window.delLogicFromStore = (elem,lid) => {
+    $(`tr#${elem}`).remove()        
+    sstorage.remove(lid)
+}
+
+window.showLogicFromStore = (lid) => {
+    const json = JSON.parse(sstorage.get(lid))
+    $('a#graph-svg-tab').click()  
+    uml.jsonedit.set(json)
+    uml.graph.clear()
+    uml.restoreGraph(json.states)   
+    uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func)) 
+}
+
+function pushLogicToStore(table,logic,key) {
+    const lid = key ? key : `${logic.prj}${logic.id}`
+    const prj = key ? key : logic.prj
+    const id  = key ? '' : logic.id
+
+    const prjID = key ? `<td colspan="2">${key}</td>` : `<td>${logic.prj}</td><td>${logic.id}</td>`
+
+    table.append(`
+        <tr id="logic-${lid}">
+            <th scope="row">
+                <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#" onclick="delLogicFromStore('logic-${lid}','${lid}')"><i class="fas fa-trash-alt"></i>   Delete</a>
+                    <a class="dropdown-item" href="#" onclick="showLogicFromStore('${lid}')"><i class="far fa-eye"></i>   Show</a>
+                </div>
+            </th>
+            ${prjID}
+        </tr>`)
+    sstorage.set(key ? logic : JSON.stringify(logic), lid)
+}
+// --------------------------------------------------
+function addRowtoTable(table,worker,sname) {   
+    table.append(`
+    <tr id="logic-${worker}-${sname}">
+    <th scope="row">
+        <div class="form-check">
+            <input class="form-check-input position-static" type="radio" name="selLogic" id="" value="" onclick="selectLogicByName('td#${worker}-${sname} > button.logicAction')">
+        </div>
+    </th>
+    <td>${sname}</td>
+    <td id="${worker}-${sname}">
+        <button type="button" class="btn btn-success logicAction" onclick="loadLogic('${sname}','${worker}')" title="Load Logic" disabled><i class="fas fa-download"></i></button>
+        <button type="button" class="btn btn-info logicAction" onclick="activeLogic('${sname}','${worker}')" title="Activate Logic" disabled><i class="fas fa-exclamation-triangle"></i></button>
+        <button type="button" class="btn btn-primary logicAction" onclick="stepLogic('${worker}','step')" title="Run Step Logic" disabled><i class="fas fa-step-forward"></i></button>
+        <button type="button" class="btn btn-warning logicAction" onclick="stepLogic('${worker}',1000,this)" title="Exec Loop Logic" disabled><i class="fas fa-play"></i></button>        
+        <button type="button" class="btn btn-danger logicAction" onclick="delLogic('${sname}','${worker}')" title="Delete Logic" disabled><i class="fas fa-trash-alt"></i></button>
+    </td>
+</tr>`)    
 }
 
 function updateAtomNote(atomElem,typeAction) {
     let item = {}
-    item[uml.getSelectedItem().name] = typeAction
+    const select = uml.getSelectedItem()
+    if (!select) return
+    item[select.name] = typeAction
     let note = JSON.parse(atomElem.attr('data-content'))
     note.push(item)
     const participant = JSON.stringify(note)
     console.log(`Action Participant: ${participant}`)
     atomElem.attr({'data-content': participant,'title': participant})
+            .css({ 'background-color': 'lightgreen' })
+            .tooltip()
 }
 
 function dstStateList(src) {
@@ -687,6 +932,8 @@ function lanchContextMenu(elemid) {
     $('a#makeTrans').click(()=>{ newElem('Trans') })
     $('button#confirmTrans').click(()=>{ makeTrans() })
     $('a#showLogic').click(()=>{ newElem('Code') })
+    $('a#showAtoms').click(()=>{ const json = uml.jsonedit.get(); $("div#codecollect").empty(); uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func)) })
+    $('a#pushLogic').click(()=>{ pushLogicToStore($(`tbody#listLogics`) ,uml.jsonedit.get()) })
     $('span#closeModal').click(()=>{ hideAll() })
     $('a#delState').click(()=>{ uml.sellRemove() })       
     $('a#addEntry').click(()=>{ openNav(true); $('a#add-action-tab').text('>[entries]'); $('a#add-action-tab').attr('title','entries'); $('a#code-collect-tab').tab('show') })
@@ -696,13 +943,15 @@ function lanchContextMenu(elemid) {
     $('a#addTrigger').click(()=>{ openNav(true); $('a#add-action-tab').text('>[triggers]'); $('a#add-action-tab').attr('title','triggers'); $('a#code-collect-tab').tab('show') })
     $('a#addEffect').click(()=>{ openNav(true); $('a#add-action-tab').text('>[effects]'); $('a#add-action-tab').attr('title','effects'); $('a#code-collect-tab').tab('show') })    
 
-    $('a#newGraph').click(()=>{ uml.graph.clear(); uml.jsonedit.set(initDafsmTemplate); })
     $('a#openDafsm').click(()=>{ 
         const restore = JSON.parse(lstorage.get())
-        uml.jsonedit.set(restore)
-        uml.restoreGraph(restore.states)        
+        if (restore) {
+            uml.jsonedit.set(restore)
+            uml.restoreGraph(restore.states)   
+            uml.printAtomsList(restore.states,restore.start,restore.stop).forEach((atom) => showAtom(atom.name,atom.func)) 
+        }    
     })
-    $('a#saveDafsm').click(()=>{ lstorage.set(JSON.stringify(uml.get())); })     
+    $('a#saveDafsm').click(()=>{ lstorage.set(JSON.stringify(uml.jsonedit.get()/*uml.get()*/)); })     
     /* 
         project = {
             target: {
@@ -722,17 +971,17 @@ function lanchContextMenu(elemid) {
             }
         }
     */  
+
+    $('a#newGraph').click(()=>{ uml.graph.clear(); uml.jsonedit.set(initDafsmTemplate); })
     $('a#openProj').click(()=>{ $('input#projectinput').click() })
     $('a#saveProj').click(()=>{ 
         const proj = {
-            target: {
-                host: $('input[aria-label="Target"]').val(),
-                port: $('input[aria-label="Port"]').val(),
-                secrets: {}
-            },
-            dafsm: [uml.get()],
-            monitor: {}
+            dafsm: sstorage.retrive((key,value)=>{ return {id: key, logic: value} })
         }
+        /*
+        proj.dafsm = Object.keys(sessionStorage).map((key) => {
+            return {id: key, logic: sstorage.get(key)}
+        })*/
         project.save(JSON.stringify(proj))  
      })     
 }
