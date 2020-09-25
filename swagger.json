@@ -1,9 +1,18 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "version": "1.0.0",
+      "version": "2.0.0",
       "title": "NODE Adaptive Worker API overview",
-      "description": "Concurrent Distributed Applications Systems (CDAS) / Adaptive Cluster Provisioning"
+      "description": "Concurrent Distributed Applications Systems (CDAS) / Adaptive Node Cluster Provisioning",
+      "contact" : {
+        "name": "Yakov Liskoff",
+        "url":  "https://cloudexpertise.blogspot.com/2020/07/adaptive-network-architecture-abstract.html",
+        "email": "liskovyakov@gmail.com" 
+      },
+      "license": {
+        "name": "Free for personal use only, please contact with me for commercial uses"
+      },
+      "termsOfService": "https://hub.docker.com/repository/docker/vcomm/nodejsworker"
     },
     "servers": [
       {
@@ -444,7 +453,38 @@
             }
           }
         }
-      }        
+      },
+      "/subscribe/{suid}": {
+        "get": {
+          "summary": "Subscribe to stream SSE",          
+          "operationId": "streamMonitor",
+          "tags": [
+            "stream"
+          ],
+          "parameters": [
+            {
+              "name": "suid",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "defining events for SSE",
+              "content": {
+                "text/event-stream": {
+                  "schema": {
+                    "$ref": "#/components/schemas/stream"
+                  }
+                }
+              } 
+            }           
+          }  
+        }      
+      }       
 
     },
 
@@ -491,6 +531,38 @@
           "required": [
             "id","states"
           ]
+        },
+        "stream": {
+          "type": "object",
+          "x-events": {
+            "added": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "updated": {
+              "type": "object",
+              "properties": {
+                "previous":{
+                  "type": "string"
+                },
+                "newValue":{
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }                                
+              }              
+            }
+          }
         }          
       }
     }
