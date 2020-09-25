@@ -10,6 +10,7 @@ class aWorker extends Message {
     constructor(events) {
         super(`worker-${process.pid}`,events);
         this.metrics = []
+        this.evDict  = { dafsm: false }
         this.engine = new adaptive.aEngine('../')       
         logger = log4js.getLogger(`worker-${process.pid}`);
         logger.level = 'trace';
@@ -17,9 +18,10 @@ class aWorker extends Message {
             this.engine.init(this.engine.load(this.engine.read(process.env['script'])), this.engine._cntn_)
             logger.trace(`Worker process ${process.pid} with env: ${process.env['script']}`);
         }
+        this.engine._process_ = this
     } 
 
-    init() {
+    init() {        
         const self = this;
         process
             .on('message', function(msg) {
@@ -36,6 +38,7 @@ class aWorker extends Message {
     }
 
     msgSend(message) {
+        message.process = process.pid
         process.send({ chat: message });
     }
 
@@ -48,17 +51,21 @@ class aWorker extends Message {
     }
 
     msgStream(message) {
+        message.process = process.pid
         process.send({ stream: message });
     }
 
     collectMetrics() {
         let count = 0;
-        const interval = 10000; // 10 sec
+        const interval = 60000; // 60 sec
         const retential_threshold = 60; // 10 min
-        let usageCpu = process.cpuUsage();
+        let usageMem = {},
+            usageCpu = process.cpuUsage();
         setInterval(()=>{
+            usageMem = process.memoryUsage()
             usageCpu = process.cpuUsage(usageCpu)
-            this.metrics.push({cpu: usageCpu, mem: process.memoryUsage()}) 
+            this.msgStream({metrics: {cpu: usageCpu, mem: usageMem, time: Date.now()}})
+            this.metrics.push({cpu: usageCpu, mem: usageMem}) 
             count++
             if (count > retential_threshold) {
                 this.metrics = []
@@ -66,6 +73,13 @@ class aWorker extends Message {
                 logger.debug(`Clear process: ${process.pid} metrics`)
             }
         },interval)
+    }
+
+    eventStatus(evname) {
+        if (this.evDict.hasOwnProperty(evname))
+            return this.evDict[evname]
+        else 
+            return false
     }
 }
 
@@ -100,10 +114,41 @@ new aWorker({/*
         return new Promise((resolve) => resolve(self.engine.delLogic(msg.body))) 
     },
     execute: (msg,  self) => {
-        logger.trace(`Worker: ${process.pid} | execute logic: ${msg.body.event} in mode:`, msg.body.mode);    
-        return new Promise((resolve) => resolve(self.engine.emitEvent(msg.body.event,msg.body.mode,self.msgStream,msg.body.suid))) 
+        let status = false
+        logger.trace(`Worker: ${process.pid} | execute logic: ${msg.body.event} in mode:`, msg.body.mode);  
+        if (msg.body.mode === 'step') {  
+            status = self.engine.emitEvent(msg.body.event,msg.body.mode,self.msgStream,msg.body.suid)          
+            return new Promise((resolve) => resolve({ execute: { 
+                evname: msg.body.event, 
+                mode  : `${msg.body.mode}`,
+                state : status 
+            }})) 
+        } else if(self.evDict.hasOwnProperty(msg.body.event) && 
+                  self.evDict[msg.body.event] === false) {
+            self.evDict[msg.body.event] = msg.body.mode
+            status = self.engine.emitEvent(msg.body.event,msg.body.mode,self.msgStream,msg.body.suid)
+            return new Promise((resolve) => resolve({ execute: { 
+                evname: msg.body.event, 
+                mode  : `loop[${msg.body.mode}]`,
+                state : `play` 
+            }})) 
+        } else if(self.evDict.hasOwnProperty(msg.body.event)) {
+            self.evDict[msg.body.event] = false
+            return new Promise((resolve) => resolve({ execute: { 
+                evname: msg.body.event, 
+                mode  : msg.body.mode,
+                state : `pause` 
+            }})) 
+        } else {
+            return new Promise((resolve) => resolve({ execute: { 
+                evname: msg.body.event, 
+                mode  : msg.body.mode,
+                state : `fault` 
+            }}))            
+        }
     },
     newevent: (msg,  self) => {
+        self.evDict[msg.body.event] === false
         logger.trace(`Worker: ${process.pid} | create event: ${msg.body.evname} func:`, msg.body.func);    
         return new Promise((resolve) => resolve(self.engine.emitOn(msg.body.evname,msg.body.func))) 
     },
@@ -114,6 +159,10 @@ new aWorker({/*
     metrics: (msg,  self) => {
         logger.trace(`Worker: ${process.pid} | retrive metrics:`);    
         return new Promise((resolve) => resolve(self.metrics)) 
+    },
+    resources: (msg,  self) => {
+        logger.trace(`Worker: ${process.pid} | retrive all resources:`);    
+        return new Promise((resolve) => resolve({events: self.engine.emitOn(), logics: self.engine.getLogics(), metrics: self.metrics})) 
     }
 }).init()
 

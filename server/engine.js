@@ -33,6 +33,7 @@ class adaptiveContent extends dafsm.CONTENT {
 class adaptiveEngine extends dafsm.ASYNCWRAPPER {
     constructor(path,acntn) {
         super(path || './')
+        this._process_ = null
         this._evemitter_ = new EventEmitter()
         this._evemitter_.on('dafsm', (mode, stream, suid) => {
             logger.trace(`Even drive on[dafsm] mode: ${mode}`) 
@@ -105,7 +106,7 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
             this._evemitter_.on(evname, (mode, stream, suid) => { 
                 if (mode === 'step') {
                     stream({ suid: suid, execute: `drive on[${evname}] | ${func(evname)}` })
-                } else if (mode) {
+                } else if (mode && this._process_ && this._process_.eventStatus(evname)) {
                     // shall setInterval with xMs and numOfCounts
                 }
             })
@@ -223,7 +224,7 @@ class adaptiveEngine extends dafsm.ASYNCWRAPPER {
     }
 
     async loop(ms, stream, suid) {
-        while(this.getCntn().get()['complete'] != true) {
+        while(this.getCntn().get()['complete'] != true && this._process_ && this._process_.eventStatus('dafsm')) {
             const prev = this.getCntn().get()['keystate']
             await this.event(this._cntn_)
             .then(() => { 

@@ -33,7 +33,7 @@ class aMaster extends Message {
                 this.clients[id].res.write("data: " + JSON.stringify(data) + "\n\n");
                 logger.debug("Update: monotoring :",data); 
             } else {
-                logger.debug("Update pushing :",id); 
+                logger.debug("Update pushing wrong clientId:",id); 
             }
         });        
         logger.trace(`Config cluster:\n`,this._config_); 
@@ -62,8 +62,15 @@ class aMaster extends Message {
                     logger.trace(`Master recv msg: [${msg.chat.id}]:`, msg.chat.head);   
                     if (msg.chat.head) self.evMessage(msg.chat);  
                 } else if (msg.stream) {
+                    msg.stream.worker = worker.id
                     logger.debug(`Stream push:`,msg.stream)
-                    self.stream.emit("push", msg.stream.suid, msg.stream)
+                    if (msg.stream.hasOwnProperty('metrics')) {
+                        for (let clientId in self.clients) {
+                            self.stream.emit("push", clientId, msg.stream)
+                        }
+                    } else {                    
+                        self.stream.emit("push", msg.stream.suid, msg.stream)
+                    }
                 }         
             });
             if (this.resources[worker.id]) {
