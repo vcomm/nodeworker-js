@@ -1,7 +1,8 @@
 'use strict';
 
 const log4js = require('log4js');
-let logger;
+let   logger = log4js.getLogger(`:Message`);
+logger.level = 'error';
 
 class Message {
     constructor(name,events) {  
@@ -10,7 +11,6 @@ class Message {
         this.onMessage = events || null;
         
         logger = log4js.getLogger(`${name}:Message`);
-        logger.level = 'trace';
     }
 
     request(message) {
@@ -115,4 +115,7 @@ class Message {
     }
 }
 
-module.exports = Message;
+module.exports = {
+    Message : Message,
+    mLogger : logger
+}
