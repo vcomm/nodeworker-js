@@ -108,6 +108,49 @@
         }
       },
 
+      "/msgbroker/{topic}": {
+        "put": {
+          "summary": "Put msg to master broker",          
+          "operationId": "msgbroker",
+          "tags": [
+            "broker"
+          ],
+          "parameters": [
+            {
+              "name": "topic",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Broker message",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      
       "/activate/{sname}/{workerid}": {
         "get": {
           "summary": "Node Worker activate dafsm logic",
@@ -130,6 +173,48 @@
               "required": true,
               "schema": {
                 "type": "string"
+              }
+            }
+          ],          
+          "responses": {
+            "200": {
+              "description": "200 response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/respobject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/logger/{module}/{level}": {
+        "get": {
+          "summary": "Set Logger level by module name",
+          "operationId": "levelLogger",
+          "tags": [
+            "logs"
+          ],
+          "parameters": [
+            {
+              "name": "module",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": ["cluster","master","queue","worker","engine","dafsm"]
+              }
+            },
+            {
+              "name": "level",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": ["trace","debug","info","warn","error","fatal"]
               }
             }
           ],          
