@@ -1,0 +1,553 @@
+{
+    "id": "loopdetect",
+    "type": "FSM",
+    "prj": "tree_",
+    "complete": false,
+    "start": {
+      "name": "fn_initializeTree"
+    },
+    "stop": {
+      "name": "fn_destroyTree"
+    },
+    "countstates": 5,
+    "states": [
+      {
+        "key": "init",
+        "name": "InitialState",
+        "transitions": [
+          {
+            "nextstatename": "shift",
+            "triggers": [
+              {
+                "name": "ev_IsTree"
+              }
+            ],
+            "effects": [
+              {
+                "name": "fn_setFastSlowIsRoot"
+              }
+            ],
+            "model": {
+              "type": "uml.Transition",
+              "source": {
+                  "id": "32190816-6a02-47f1-bc3c-861613bd9615"
+              },
+              "target": {
+                  "id": "42ce59e9-ee34-431f-bf2e-ce3b4dc784cc"
+              },
+              "labels": [
+                  {
+                      "position": {
+                          "distance": 0.5,
+                          "offset": 10,
+                          "args": {
+                              "keepGradient": true,
+                              "ensureLegibility": true
+                          }
+                      },
+                      "attrs": {
+                          "text": {
+                              "text": "T:init=>shift",
+                              "fontWeight": "bold"
+                          }
+                      }
+                  }
+              ],
+              "id": "1b62a22c-c9ef-4598-9913-2925c47a78c0",
+              "z": 6,
+              "attrs": {
+                  ".connection": {
+                      "stroke": "#4b4a67",
+                      "fill": "none",
+                      "stroke-linejoin": "round",
+                      "stroke-width": "2"
+                  },
+                  ".marker-arrowheads": {
+                      "display": "none"
+                  }
+              }
+            }
+          }
+        ],
+        "model": {
+          "type": "uml.StartState",
+          "size": {
+              "width": 30,
+              "height": 30
+          },
+          "position": {
+              "x": 223,
+              "y": 83
+          },
+          "angle": 0,
+          "id": "32190816-6a02-47f1-bc3c-861613bd9615",
+          "z": 2,
+          "attrs": {
+              "circle": {
+                  "fill": "#4b4a67",
+                  "stroke": "none"
+              },
+              "text": {
+                  "font-size": 15,
+                  "fill": "black"
+              },
+              "rect": {
+                  "fill": "rgba(48, 208, 198, 0.1)"
+              }
+          }
+        }
+      },
+      {
+        "key": "shift",
+        "name": "shiftPointers",
+        "entries": [
+          {
+            "name": "fn_shiftFastNode"
+          },
+          {
+            "name": "fn_shiftSlowNode"
+          }
+        ],
+        "exits": [
+          {
+            "name": "fn_keepShiftStatistics"
+          }
+        ],
+        "transitions": [
+          {
+            "nextstatename": "next",
+            "triggers": [
+              {
+                "name": "ev_FastSlowIsDiffNode"
+              }
+            ],
+            "effects": [
+              {
+                "name": "fn_MarkCheckedNodes"
+              }
+            ],
+            "model": {
+              "type": "uml.Transition",
+              "source": {
+                  "id": "42ce59e9-ee34-431f-bf2e-ce3b4dc784cc"
+              },
+              "target": {
+                  "id": "6789202e-7824-4c6f-a373-3da602a42e51"
+              },
+              "labels": [
+                  {
+                      "position": {
+                          "distance": 0.5,
+                          "offset": 10,
+                          "args": {
+                              "keepGradient": true,
+                              "ensureLegibility": true
+                          }
+                      },
+                      "attrs": {
+                          "text": {
+                              "text": "T:shift=>next",
+                              "fontWeight": "bold"
+                          }
+                      }
+                  }
+              ],
+              "id": "424d42bc-59c0-4a57-9efe-9a14f30819e4",
+              "z": 7,
+              "vertices": [
+                  {
+                      "x": 543,
+                      "y": 290
+                  }
+              ],
+              "attrs": {
+                  ".connection": {
+                      "stroke": "#37B534",
+                      "fill": "none",
+                      "stroke-linejoin": "round",
+                      "stroke-width": "2"
+                  },
+                  ".marker-arrowheads": {
+                      "display": "none"
+                  },
+                  "rect": {
+                      "fill": "rgba(48, 208, 198, 0.1)"
+                  },
+                  "text": {
+                      "fill": "black",
+                      "font-size": 15
+                  }
+              }
+            }
+          },
+          {
+            "nextstatename": "loop",
+            "triggers": [
+              {
+                "name": "ev_FastSlowIsSameNode"
+              }
+            ],
+            "effects": [
+              {
+                "name": "fn_prepareError"
+              }
+            ],
+            "model": {
+              "type": "uml.Transition",
+              "source": {
+                  "id": "42ce59e9-ee34-431f-bf2e-ce3b4dc784cc"
+              },
+              "target": {
+                  "id": "40c2431d-3c08-4780-9f3c-63101486851f"
+              },
+              "labels": [
+                  {
+                      "position": {
+                          "distance": 0.5,
+                          "offset": 10,
+                          "args": {
+                              "keepGradient": true,
+                              "ensureLegibility": true
+                          }
+                      },
+                      "attrs": {
+                          "text": {
+                              "text": "T:shift=>loop",
+                              "fontWeight": "bold"
+                          }
+                      }
+                  }
+              ],
+              "id": "dd6ee1fa-9f28-4634-a6ef-5802b7fe1b42",
+              "z": 9,
+              "vertices": [
+                  {
+                      "x": 99,
+                      "y": 284
+                  },
+                  {
+                      "x": 99,
+                      "y": 508
+                  }
+              ],
+              "attrs": {
+                  ".connection": {
+                      "stroke": "#37B534",
+                      "fill": "none",
+                      "stroke-linejoin": "round",
+                      "stroke-width": "2"
+                  },
+                  ".marker-arrowheads": {
+                      "display": "none"
+                  },
+                  "rect": {
+                      "fill": "rgba(48, 208, 198, 0.1)"
+                  },
+                  "text": {
+                      "fill": "black",
+                      "font-size": 15
+                  }
+              }
+            }
+          }
+        ],
+        "model": {
+          "type": "uml.State",
+          "name": "shift",
+          "events": [
+              "{\"entries\":2}",
+              "{\"stays\":0}",
+              "{\"exits\":1}"
+          ],
+          "position": {
+              "x": 160,
+              "y": 247
+          },
+          "size": {
+              "width": 150,
+              "height": 80
+          },
+          "angle": 0,
+          "id": "42ce59e9-ee34-431f-bf2e-ce3b4dc784cc",
+          "z": 3,
+          "attrs": {
+              ".uml-state-body": {
+                  "fill": "rgba(48, 208, 198, 0.1)",
+                  "stroke": "#37B534"
+              },
+              ".uml-state-separator": {
+                  "stroke": "#37B534",
+                  "d": "M 0 20 L 150 20"
+              },
+              ".uml-state-name": {
+                  "text": "shift"
+              },
+              ".uml-state-events": {
+                  "text": "{\"entries\":2}n{\"stays\":0}n{\"exits\":1}"
+              },
+              "rect": {
+                  "fill": "rgba(48, 208, 198, 0.1)"
+              },
+              "text": {
+                  "fill": "black",
+                  "font-size": 15
+              }
+          }
+        }
+      },
+      {
+        "key": "next",
+        "name": "contunueWalk",
+        "transitions": [
+          {
+            "nextstatename": "final",
+            "triggers": [
+              {
+                "name": "ev_treeCompleteFinish"
+              }
+            ],
+            "effects": [
+              {
+                "name": "fn_prepareStatistics"
+              }
+            ],
+            "model": {
+              "type": "uml.Transition",
+              "source": {
+                  "id": "6789202e-7824-4c6f-a373-3da602a42e51"
+              },
+              "target": {
+                  "id": "23a6a026-3838-4e65-b1fd-1eaf2aa8c1ee"
+              },
+              "labels": [
+                  {
+                      "position": {
+                          "distance": 0.5,
+                          "offset": 10,
+                          "args": {
+                              "keepGradient": true,
+                              "ensureLegibility": true
+                          }
+                      },
+                      "attrs": {
+                          "text": {
+                              "text": "T:next=>final",
+                              "fontWeight": "bold"
+                          }
+                      }
+                  }
+              ],
+              "id": "46964ddd-570d-4451-9b48-81c6dcfa1fe3",
+              "z": 10,
+              "attrs": {
+                  ".connection": {
+                      "stroke": "#A5BED3",
+                      "fill": "none",
+                      "stroke-linejoin": "round",
+                      "stroke-width": "2"
+                  },
+                  ".marker-arrowheads": {
+                      "display": "none"
+                  }
+              }
+            }
+          },
+          {
+            "nextstatename": "shift",
+            "triggers": [
+              {
+                "name": "ev_treeIsNoComplete"
+              }
+            ],
+            "model": {
+              "type": "uml.Transition",
+              "source": {
+                  "id": "6789202e-7824-4c6f-a373-3da602a42e51"
+              },
+              "target": {
+                  "id": "42ce59e9-ee34-431f-bf2e-ce3b4dc784cc"
+              },
+              "labels": [
+                  {
+                      "position": {
+                          "distance": 0.5,
+                          "offset": 10,
+                          "args": {
+                              "keepGradient": true,
+                              "ensureLegibility": true
+                          }
+                      },
+                      "attrs": {
+                          "text": {
+                              "text": "T:next=>shift",
+                              "fontWeight": "bold"
+                          }
+                      }
+                  }
+              ],
+              "id": "2ccd365b-6387-4243-a2d8-ad0c2b8b6d2c",
+              "z": 8,
+              "vertices": [
+                  {
+                      "x": 233,
+                      "y": 393
+                  }
+              ],
+              "attrs": {
+                  ".connection": {
+                      "stroke": "#A5BED3",
+                      "fill": "none",
+                      "stroke-linejoin": "round",
+                      "stroke-width": "2"
+                  },
+                  ".marker-arrowheads": {
+                      "display": "none"
+                  },
+                  "rect": {
+                      "fill": "rgba(48, 208, 198, 0.1)"
+                  },
+                  "text": {
+                      "fill": "black",
+                      "font-size": 15
+                  }
+              }
+            }
+          }
+        ],
+        "model": {
+          "type": "uml.State",
+          "name": "next",
+          "events": [
+              "{\"entries\":0}",
+              "{\"stays\":0}",
+              "{\"exits\":0}"
+          ],
+          "position": {
+              "x": 466,
+              "y": 355
+          },
+          "size": {
+              "width": 150,
+              "height": 80
+          },
+          "angle": 0,
+          "id": "6789202e-7824-4c6f-a373-3da602a42e51",
+          "z": 4,
+          "attrs": {
+              ".uml-state-body": {
+                  "fill": "rgba(48, 208, 198, 0.1)",
+                  "stroke": "#A5BED3"
+              },
+              ".uml-state-separator": {
+                  "stroke": "#A5BED3",
+                  "d": "M 0 20 L 150 20"
+              },
+              ".uml-state-name": {
+                  "text": "next"
+              },
+              ".uml-state-events": {
+                  "text": "{\"entries\":0}n{\"stays\":0}n{\"exits\":0}"
+              },
+              "rect": {
+                  "fill": "rgba(48, 208, 198, 0.1)"
+              },
+              "text": {
+                  "fill": "black",
+                  "font-size": 15
+              }
+          }
+        }
+      },
+      {
+        "key": "loop",
+        "name": "loopDetect",
+        "entries": [
+          {
+            "name": "fn_errorReport"
+          }
+        ],
+        "model": {
+          "type": "uml.State",
+          "name": "loop",
+          "events": [
+              "{\"entries\":1}",
+              "{\"stays\":0}",
+              "{\"exits\":0}"
+          ],
+          "position": {
+              "x": 242,
+              "y": 470
+          },
+          "size": {
+              "width": 150,
+              "height": 80
+          },
+          "angle": 0,
+          "id": "40c2431d-3c08-4780-9f3c-63101486851f",
+          "z": 5,
+          "attrs": {
+              ".uml-state-body": {
+                  "fill": "rgba(48, 208, 198, 0.1)",
+                  "stroke": "#5DBE8A"
+              },
+              ".uml-state-separator": {
+                  "stroke": "#5DBE8A",
+                  "d": "M 0 20 L 150 20"
+              },
+              ".uml-state-name": {
+                  "text": "loop"
+              },
+              ".uml-state-events": {
+                  "text": "{\"entries\":1}n{\"stays\":0}n{\"exits\":0}"
+              },
+              "rect": {
+                  "fill": "yellow"
+              },
+              "text": {
+                  "fill": "black",
+                  "font-size": 15
+              }
+          }
+        }
+      },
+      {
+        "key": "final",
+        "name": "normalExit",
+        "entries": [
+          {
+            "name": "fn_treeReport"
+          }
+        ],
+        "model": {
+          "type": "uml.EndState",
+          "size": {
+              "width": 30,
+              "height": 30
+          },
+          "position": {
+              "x": 525,
+              "y": 585
+          },
+          "angle": 0,
+          "id": "23a6a026-3838-4e65-b1fd-1eaf2aa8c1ee",
+          "z": 1,
+          "attrs": {
+              ".outer": {
+                  "stroke": "#4b4a67",
+                  "stroke-width": 2
+              },
+              ".inner": {
+                  "fill": "#4b4a67"
+              },
+              "rect": {
+                  "fill": "rgba(48, 208, 198, 0.1)"
+              },
+              "text": {
+                  "fill": "black",
+                  "font-size": 15
+              }
+          }
+        }
+      }
+    ]
+  }
