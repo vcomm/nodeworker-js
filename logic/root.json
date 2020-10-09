@@ -1,0 +1,380 @@
+{
+  "id": "root",
+  "type": "FSM",
+  "prj": "test_",
+  "complete": false,
+  "start": {
+    "name": "fn_initialize",
+    "func": "console.debug(`: Run fn_initialize:`,fname); cntx.api().subscribe(['marko','polo'])"
+  },
+  "stop": {
+    "name": "fn_finishing",
+    "func": "console.debug(`: Run fn_finishing:`,fname)"
+  },
+  "countstates": 3,
+  "states": [
+    {
+      "key": "init",
+      "name": "InitialState",
+      "transitions": [
+        {
+          "key": "T:init=>request",
+          "nextstatename": "request",
+          "triggers": [
+            {
+              "name": "ev_envComplete",
+              "func": "console.debug(`: Run ev_envComplete:`,fname); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fn_reqPrepare",
+              "func": "return (new Promise(resolve => { console.debug(`: Run fn_reqPrepare:`,fname); setTimeout(() => resolve(cntx), 1000) })).then(data => { console.debug(`: Complete async fn_reqPrepare:`,fname); });"
+            },
+            {
+              "name": "fn_postPrepared",
+              "func": "console.debug(`: Run fn_postPrepared:`,fname);"
+            }
+          ],
+          "model": {
+            "type": "uml.Transition",
+            "source": {
+                "id": "74fd87f7-c6a0-411a-8730-fcc5f33d8b7e"
+            },
+            "target": {
+                "id": "3001fe9a-c8ad-4784-8765-48f07328aa44"
+            },
+            "labels": [
+                {
+                    "position": {
+                        "distance": 0.5,
+                        "offset": 10,
+                        "args": {
+                            "keepGradient": true,
+                            "ensureLegibility": true
+                        }
+                    },
+                    "attrs": {
+                        "text": {
+                            "text": "T:init=>request",
+                            "fontWeight": "bold"
+                        }
+                    }
+                }
+            ],
+            "id": "2df54322-5747-4f48-b4cc-bf63df056d7b",
+            "z": 4,
+            "vertices": [],
+            "attrs": {
+                ".connection": {
+                    "stroke": "#4b4a67",
+                    "fill": "none",
+                    "stroke-linejoin": "round",
+                    "stroke-width": "2"
+                },
+                ".marker-arrowheads": {
+                    "display": "none"
+                },
+                "rect": {
+                    "fill": "rgba(48, 208, 198, 0.1)"
+                },
+                "text": {
+                    "fill": "black",
+                    "font-size": 15
+                }
+            }
+          }
+        }
+      ],
+      "model": {
+        "type": "uml.StartState",
+        "size": {
+            "width": 30,
+            "height": 30
+        },
+        "position": {
+            "x": 149,
+            "y": 246
+        },
+        "angle": 0,
+        "id": "74fd87f7-c6a0-411a-8730-fcc5f33d8b7e",
+        "z": 1,
+        "attrs": {
+            "circle": {
+                "fill": "#4b4a67",
+                "stroke": "none"
+            },
+            "text": {
+                "font-size": 15,
+                "fill": "black"
+            },
+            "rect": {
+                "fill": "rgba(48, 208, 198, 0.1)"
+            }
+        }
+      }
+    },
+    {
+      "key": "request",
+      "name": "reqState",
+      "entries": [
+        {
+          "name": "fn_initResponse",
+          "func": "console.debug(`: Run fn_initResponse:`,fname);"
+        }
+      ],
+      "transitions": [
+        {
+          "key": "T:request=>response",
+          "nextstatename": "response",
+          "triggers": [
+            {
+              "name": "ev_reqComplete",
+              "func": "console.debug(`: Run ev_reqComplete:`,fname); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fn_resPrepare",
+              "func": "console.debug(`: Run fn_resPrepare:`,fname);"
+            }
+          ],
+          "model": {
+            "type": "uml.Transition",
+            "source": {
+                "id": "3001fe9a-c8ad-4784-8765-48f07328aa44"
+            },
+            "target": {
+                "id": "ec62a2e4-6746-4217-8ff7-5c64768341e2"
+            },
+            "labels": [
+                {
+                    "position": {
+                        "distance": 0.5,
+                        "offset": 10,
+                        "args": {
+                            "keepGradient": true,
+                            "ensureLegibility": true
+                        }
+                    },
+                    "attrs": {
+                        "text": {
+                            "text": "T:request=>response",
+                            "fontWeight": "bold"
+                        }
+                    }
+                }
+            ],
+            "id": "49ee78b6-4a3d-4eed-abf3-94f59454d9dc",
+            "z": 5,
+            "vertices": [
+                {
+                    "x": 394,
+                    "y": 157
+                },
+                {
+                    "x": 750,
+                    "y": 159
+                }
+            ],
+            "attrs": {
+                ".connection": {
+                    "stroke": "#3B6F03",
+                    "fill": "none",
+                    "stroke-linejoin": "round",
+                    "stroke-width": "2"
+                },
+                ".marker-arrowheads": {
+                    "display": "none"
+                },
+                "rect": {
+                    "fill": "rgba(48, 208, 198, 0.1)"
+                },
+                "text": {
+                    "fill": "black",
+                    "font-size": 15
+                }
+            }
+          }
+        }
+      ],
+      "model": {
+        "type": "uml.State",
+        "name": "request",
+        "events": [
+            "{\"entries\":1}",
+            "{\"stays\":0}",
+            "{\"exits\":0}"
+        ],
+        "position": {
+            "x": 319,
+            "y": 218
+        },
+        "size": {
+            "width": 150,
+            "height": 80
+        },
+        "angle": 0,
+        "id": "3001fe9a-c8ad-4784-8765-48f07328aa44",
+        "z": 2,
+        "attrs": {
+            ".uml-state-body": {
+                "fill": "rgba(48, 208, 198, 0.1)",
+                "stroke": "#3B6F03"
+            },
+            ".uml-state-separator": {
+                "stroke": "#3B6F03",
+                "d": "M 0 20 L 150 20"
+            },
+            ".uml-state-name": {
+                "text": "request"
+            },
+            ".uml-state-events": {
+                "text": "{\"entries\":1}\n{\"stays\":0}\n{\"exits\":0}"
+            },
+            "rect": {
+                "fill": "rgba(48, 208, 198, 0.1)"
+            },
+            "text": {
+                "fill": "black",
+                "font-size": 15
+            }
+        }
+      }      
+    },
+    {
+      "key": "response",
+      "name": "resState",
+      "entries": [
+        {
+          "name": "fn_initResponse",
+          "func": "console.debug(`: Run fn_initResponse:`,fname);"
+        }
+      ],
+      "exits": [
+        {
+          "name": "fn_sendResponse",
+          "func": "return (new Promise(resolve => { console.debug(`: Run fn_sendResponse:`,fname); setTimeout(() => resolve(cntx), 1000) })).then(data => { console.debug(`: Complete async fn_sendResponse:`,fname); });"
+        }
+      ],
+      "transitions": [
+        {
+          "key": "T:response=>request",
+          "nextstatename": "request",
+          "triggers": [
+            {
+              "name": "ev_resComplete",
+              "func": "console.debug(`: Run ev_resComplete:`,fname); return true;"
+            }
+          ],
+          "effects": [
+            {
+              "name": "fn_updateSession",
+              "func": "console.debug(`: Run fn_updateSession:`,fname);"
+            }
+          ],
+          "model": {
+            "type": "uml.Transition",
+            "source": {
+                "id": "ec62a2e4-6746-4217-8ff7-5c64768341e2"
+            },
+            "target": {
+                "id": "3001fe9a-c8ad-4784-8765-48f07328aa44"
+            },
+            "labels": [
+                {
+                    "position": {
+                        "distance": 0.5,
+                        "offset": 10,
+                        "args": {
+                            "keepGradient": true,
+                            "ensureLegibility": true
+                        }
+                    },
+                    "attrs": {
+                        "text": {
+                            "text": "T:response=>request",
+                            "fontWeight": "bold"
+                        }
+                    }
+                }
+            ],
+            "id": "6da1cb16-65f7-4b4e-898c-04da88e27a36",
+            "z": 6,
+            "vertices": [
+                {
+                    "x": 750,
+                    "y": 383
+                },
+                {
+                    "x": 392,
+                    "y": 382
+                }
+            ],
+            "attrs": {
+                ".connection": {
+                    "stroke": "#4956BB",
+                    "fill": "none",
+                    "stroke-linejoin": "round",
+                    "stroke-width": "2"
+                },
+                ".marker-arrowheads": {
+                    "display": "none"
+                },
+                "rect": {
+                    "fill": "rgba(48, 208, 198, 0.1)"
+                },
+                "text": {
+                    "fill": "black",
+                    "font-size": 15
+                }
+            }
+          }
+        }
+      ],
+      "model": {
+        "type": "uml.State",
+        "name": "response",
+        "events": [
+            "{\"entries\":1}",
+            "{\"stays\":0}",
+            "{\"exits\":1}"
+        ],
+        "position": {
+            "x": 677,
+            "y": 226
+        },
+        "size": {
+            "width": 150,
+            "height": 80
+        },
+        "angle": 0,
+        "id": "ec62a2e4-6746-4217-8ff7-5c64768341e2",
+        "z": 3,
+        "attrs": {
+            ".uml-state-body": {
+                "fill": "rgba(48, 208, 198, 0.1)",
+                "stroke": "#4956BB"
+            },
+            ".uml-state-separator": {
+                "stroke": "#4956BB",
+                "d": "M 0 20 L 150 20"
+            },
+            ".uml-state-name": {
+                "text": "response"
+            },
+            ".uml-state-events": {
+                "text": "{\"entries\":1}\n{\"stays\":0}\n{\"exits\":1}"
+            },
+            "rect": {
+                "fill": "rgba(48, 208, 198, 0.1)"
+            },
+            "text": {
+                "fill": "black",
+                "font-size": 15
+            }
+        }
+      }
+    }
+  ]
+}
