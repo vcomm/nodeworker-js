@@ -3,10 +3,20 @@
         "exec": "/worker.js",
         "args": ["--use", "http"]
     },
-    "numbers": 2,
-    "maxnumbers": 0,
+    "numbers": 3,
+    "maxnumbers": 2,
     "env" : [
+        { "script": "logic/root.json" },
         { "script": "logic/main.json" },
-        { "script": "logic/main.json" }
-    ]            
+        { "script": "logic/tloopd.json" }
+    ],
+    "broker": {
+        "retention": {
+            "qsize": 10,
+            "times": 10000
+        },
+        "topics": [
+            "marko","polo"
+        ]
+    }            
 } 
