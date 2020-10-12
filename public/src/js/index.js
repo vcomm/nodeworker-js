@@ -233,8 +233,11 @@ $(function() {
         project.read(file,(result)=>{
             const proj = JSON.parse(result)
             console.debug(`Read Project: `,proj)
-            proj.dafsm.forEach((fsm) => {
-                pushLogicToStore($(`tbody#listLogics`),fsm.logic,fsm.id)
+            proj.dafsm.forEach((fsm) => {                
+                if (fsm.id !== 'bios') {
+                    console.log(`Push ID: ${fsm.id}`)
+                    pushLogicToStore($(`tbody#listLogics`),fsm.logic,fsm.id)
+                }
             })
         })
     });
