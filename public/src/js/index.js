@@ -12,18 +12,19 @@ import initDafsmTemplate from '../json/dafsm.json'
 import "@scripts/jsoneditor/dist/jsoneditor.min.css"
 import '../css/index.css'
 
-//import JSONEditor from '../lib/js/jsoneditor'
 import * as JSONEditor from 'jsoneditor'
 import wStorage from '../js/wstorage'
 import wProject from '../js/project'
 import umlFsm from '../js/fsm'
 import nodeTarget from '../js/cluster'
+import jsonTools from '../js/jsontools'
 
 let uml = null;
 let editor = null;
 let lstorage = null;
 let sstorage = null;
 let project = null;
+let jtools  = null;
 
 const cluster = new nodeTarget('/');
 
@@ -45,7 +46,7 @@ const monitor = (function (target) {
                 <div class="card-header" role="tab" id="heading${count}">
                 <h5 class="mb-0" ondblclick="">
                     <a data-toggle="collapse" href="#collapse${count}" aria-expanded="true" aria-controls="collapse${count}">
-                    ${dt} | [#${worker}] STEP-${count}: State(${msg.currState.key}) => State(${msg.nextState.key})
+                    ${dt} | [#${worker}] STEP-${count}: State(${msg.currState}) => State(${msg.nextState})
                     </a>
                 </h5>
                 </div>
@@ -59,31 +60,14 @@ const monitor = (function (target) {
         },
         prnExecSeq: (msg)=>{
             let ret = `<ul style="color:green">`
-            const exits = msg.currState.exits ? msg.currState.exits : []
-            const entries = msg.nextState.entries ? msg.nextState.entries : []
-            let triggers = [], effects = []
 
-            msg.currState.transitions.forEach((trans) => {
-                trans.triggers.forEach((trig) => {
-                    triggers.push(trig)
+            for (let [key, func] of Object.entries(msg.prnlog)) {
+                ret +=`<li>${key}</li>`
+                func.forEach((log, index, array) => {
+                    ret +=`<p style="color:red">${log}</p>`
                 })
-                trans.effects.forEach((eff) => {
-                    effects.push(eff)
-                })                
-            });            
-
-            triggers.forEach((item, index, array) => {
-                ret +=`<li>${item.name}</li>`
-            });            
-            exits.forEach((item, index, array) => {
-                ret +=`<li>${item.name}</li>`
-            });
-            effects.forEach((item, index, array) => {
-                ret +=`<li>${item.name}</li>`
-            });
-            entries.forEach((item, index, array) => {
-                ret +=`<li>${item.name}</li>`
-            });            
+            }
+     
             ret +=`</ul>`
             return ret
         }
@@ -133,7 +117,12 @@ $(function() {
     if (restore) {
         uml.jsonedit.set(restore)
         uml.restoreGraph(restore.states) 
-        uml.printAtomsList(restore.states,restore.start,restore.stop).forEach((atom) => showAtom(atom.name,atom.func))
+        uml.printAtomsList(restore.states,restore.start,restore.stop)
+            .forEach((atom) => 
+                showAtom(atom.name,
+                        (atom.func === undefined) ? undefined : atom.func,
+                        (atom.func === undefined) ? false : true)
+            )
     } 
 
     // Connect to cluster
@@ -182,12 +171,12 @@ $(function() {
                 <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                 </a>
                 <div class="dropdown-menu">
-                  <a class="dropdown-item" href="#" onclick="" >Get Logics</a>
-                  <a class="dropdown-item" href="#" onclick="">Get Events</a>
-                  <a class="dropdown-item" href="#" onclick="getMetrics('${key}')" title="Get Worker Metrics">Get Metrics</a>
+                  <a class="dropdown-item" href="/" onclick="" title="disabled">Get Logics</a>
+                  <a class="dropdown-item" href="/" onclick="" title="disabled">Get Events</a>
+                  <a class="dropdown-item" href="/" onclick="getMetrics('${key}')" title="Get Worker Metrics (disabled)">Get Metrics</a>
                   <a class="dropdown-item" href="#" onclick="attachLogic('${key}')" title="Attach Logic to Worker">Attach Logic</a>
-                  <a class="dropdown-item" href="#" onclick="eventCreate('${key}')" title="Create Worker Event">Create Event</a>
-                  <a class="dropdown-item" href="#" onclick="eventDelete('${key}')" title="Delete Worker Event">Delete Event</a>
+                  <a class="dropdown-item" href="/" onclick="eventCreate('${key}')" title="Create Worker Event (disabled)">Create Event</a>
+                  <a class="dropdown-item" href="/" onclick="eventDelete('${key}')" title="Delete Worker Event (disabled)">Delete Event</a>
                 </div>
                 </li>
                 <div id="accordion-${key}" class="collapse">
@@ -384,7 +373,7 @@ function initJSONeditor(id) {
     let container = document.getElementById(id);
     let options = {
         mode: 'view',
-        modes: ['view', 'form'], // allowed modes
+        modes: ['view', 'form', 'tree'], // allowed modes
         onError: function (err) {
             alert(err.toString());
         },
@@ -404,6 +393,7 @@ function initJSONeditor(id) {
         "states": {}
       };*/
     editor = new JSONEditor(container, options, initDafsmTemplate);  
+    jtools = new jsonTools(editor);
     return editor 
 }
 
@@ -549,9 +539,6 @@ window.keepFuncJson = function(elem) {
     $(elem).children('a').attr('contenteditable',false)
 //    $(elem).parent().css({ 'background-color': 'lightgreen' })
     const cardHeader = $(elem).parent('div.card-header')
-    
-//    const participant = cardHeader.attr('data-content')
-
     const funcName = $(elem).children('a').text()
     const funcCode = cardHeader.parent().find('.card-body').text()   
     const typeAction = $('a#add-action-tab').attr('title')
@@ -561,12 +548,18 @@ window.keepFuncJson = function(elem) {
 
     lstorage.set(JSON.stringify(uml.get()))
     uml.jsonedit.set(JSON.parse(lstorage.get()))
-    /*
-    setTimeout(()=>{
-        $(elem).parent().css({ 'background-color':'rgba(0,0,0,.03)' })
-//        cardHeader.popover('hide')
-    },3000)*/    
+   
     updateAtomNote(cardHeader,typeAction)
+}
+
+window.updateJsonFuncBody = function(elem) {
+    const cardHeader = $(elem).parent('div.card-header')
+    const funcName = $(elem).children('a').text()
+    const funcCode = cardHeader.parent().find('.card-body').text()    
+    $(elem).children('a').attr('contenteditable',false)
+
+    if (jtools.fnupdate(funcName.replace(/\s/g, ''),funcCode))
+        $(elem).parent().css({ 'background-color': 'lightgreen' })      
 }
 
 window.newAction = function(elem) {
@@ -598,14 +591,16 @@ window.newAction = function(elem) {
     $('a#code-edit-tab').click()
 }
 
-function showAtom(fname, func) {
+function showAtom(fname, func, verify) {
+    const bcolor = verify ? 'lightgreen' : 'lightpink'
+    const funcBodyOper = (verify === undefined) ? 'keepFuncJson(this)' : 'updateJsonFuncBody(this)'
     var count = parseInt($("div#codecollect").attr("count"))+1
     $("div#codecollect")
     .append(`
     <div class="card" style="margin: 10px;">
     <div class="card-header" role="tab" id="card-${fname}" data-toggle="tooltip" data-placement="top"
-    data-content="[]">
-      <h5 class="mb-0" ondblclick="keepFuncJson(this)" style="display: flex;">
+    data-content="[]" style="background-color: ${bcolor};">
+      <h5 class="mb-0" ondblclick="${funcBodyOper}" style="display: flex;">
         <a data-toggle="collapse" href="#collapse${fname}" aria-expanded="true" aria-controls="collapscount" contenteditable="false">${fname}</a>
         <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="margin-left: auto;">
           <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
@@ -620,6 +615,17 @@ function showAtom(fname, func) {
     </div>
     </div> `)
     .attr("count",`${count}`)
+    biosStorage(fname,func)
+}
+
+function biosStorage(fname,fbody) {
+    let   lstBios = {}
+    const bios = sstorage.get('bios')
+    if (bios) {
+        lstBios = JSON.parse(bios)
+    } 
+    lstBios[fname] = fbody
+    sstorage.set(JSON.stringify(lstBios),'bios')
 }
 
 window.delAtomAction = (elem)=> {
@@ -745,16 +751,35 @@ window.getLogicByName = (elem) => {
 }
 */
 
+
 window.attachLogic = (worker) => {
-    const logic = uml.get()
+    const logic = uml.jsonedit.get() //uml.get()
     cluster.request({        
         method  : 'post',
         service : 'attach',
         params  : [worker],
         body    : logic
     }, (json) => {
-        const table = $(`tbody#listProcess-${worker}`)    
-        addRowtoTable(table,worker,logic.id)
+        if (json.fault > 0) {
+            console.error(`Verification Fault! ${json.fault} atom's function not assigned yet`)
+            $('a#code-collect-tab').tab('show')
+            $("div#codecollect").empty();
+            jtools.walk(json,(key,value)=> {
+                if (typeof(value)=="object") {
+                    if (value.hasOwnProperty("fname") && 
+                        value.hasOwnProperty("verify")) {
+                        if (!value.verify) {   
+                            showAtom(value.fname,undefined,value.verify)
+                        } else {
+                            showAtom(value.fname,jtools.getFuncByKey(value.fname),value.verify)
+                        }
+                    }
+                }                
+            })                   
+        } else {
+            const table = $(`tbody#listProcess-${worker}`)    
+            addRowtoTable(table,worker,logic.id)
+        }
     })        
 }
 
@@ -768,7 +793,8 @@ window.loadLogic = (sname,worker) => {
         uml.jsonedit.set(json)
         uml.graph.clear()
         uml.restoreGraph(json.states)   
-        uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func))      
+        $("div#codecollect").empty();
+        uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func,true))      
     })
 }
 
@@ -827,7 +853,12 @@ window.showLogicFromStore = (lid) => {
     uml.jsonedit.set(json)
     uml.graph.clear()
     uml.restoreGraph(json.states)   
-    uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func)) 
+    uml.printAtomsList(json.states,json.start,json.stop)
+        .forEach((atom) => 
+            showAtom(atom.name,
+                (atom.func === undefined) ? undefined : atom.func,
+                (atom.func === undefined) ? false : true)            
+        ) 
 }
 
 function pushLogicToStore(table,logic,key) {
@@ -932,7 +963,16 @@ function lanchContextMenu(elemid) {
     $('a#makeTrans').click(()=>{ newElem('Trans') })
     $('button#confirmTrans').click(()=>{ makeTrans() })
     $('a#showLogic').click(()=>{ newElem('Code') })
-    $('a#showAtoms').click(()=>{ const json = uml.jsonedit.get(); $("div#codecollect").empty(); uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func)) })
+    $('a#showAtoms').click(()=>{ 
+        const json = uml.jsonedit.get(); 
+        $("div#codecollect").empty(); 
+        uml.printAtomsList(json.states,json.start,json.stop)
+            .forEach((atom) => 
+                showAtom(atom.name,
+                    (atom.func === undefined) ? undefined : atom.func,
+                    (atom.func === undefined) ? false : true)                
+            ) 
+    })
     $('a#pushLogic').click(()=>{ pushLogicToStore($(`tbody#listLogics`) ,uml.jsonedit.get()) })
     $('span#closeModal').click(()=>{ hideAll() })
     $('a#delState').click(()=>{ uml.sellRemove() })       
@@ -942,7 +982,7 @@ function lanchContextMenu(elemid) {
 
     $('a#addTrigger').click(()=>{ openNav(true); $('a#add-action-tab').text('>[triggers]'); $('a#add-action-tab').attr('title','triggers'); $('a#code-collect-tab').tab('show') })
     $('a#addEffect').click(()=>{ openNav(true); $('a#add-action-tab').text('>[effects]'); $('a#add-action-tab').attr('title','effects'); $('a#code-collect-tab').tab('show') })    
-
+/*
     $('a#openDafsm').click(()=>{ 
         const restore = JSON.parse(lstorage.get())
         if (restore) {
@@ -951,7 +991,8 @@ function lanchContextMenu(elemid) {
             uml.printAtomsList(restore.states,restore.start,restore.stop).forEach((atom) => showAtom(atom.name,atom.func)) 
         }    
     })
-    $('a#saveDafsm').click(()=>{ lstorage.set(JSON.stringify(uml.jsonedit.get()/*uml.get()*/)); })     
+    $('a#saveDafsm').click(()=>{ lstorage.set(JSON.stringify(uml.jsonedit.get())); })  
+*/       
     /* 
         project = {
             target: {
@@ -972,7 +1013,7 @@ function lanchContextMenu(elemid) {
         }
     */  
 
-    $('a#newGraph').click(()=>{ uml.graph.clear(); uml.jsonedit.set(initDafsmTemplate); })
+    $('a#newGraph').click(()=>{ uml.graph.clear(); uml.jsonedit.set(initDafsmTemplate); $("div#codecollect").empty(); })
     $('a#openProj').click(()=>{ $('input#projectinput').click() })
     $('a#saveProj').click(()=>{ 
         const proj = {
