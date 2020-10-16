@@ -8,10 +8,10 @@ const express = require('express');
 const process = require('process');
 const cluster = require('cluster');
 const swaggerUi = require('swagger-ui-express');
-const cMaster = require('./server/master')
-//const cMaster = require('./dist/server/master')
+const { cMaster, Logger, queueLog } = require('./server/master')
 
 const log4js = require('log4js');
+const { publicDecrypt } = require('crypto');
 const logger = log4js.getLogger('cluster');
 logger.level = 'trace';
 
@@ -26,10 +26,15 @@ const swaggerDocument = require(dir+'swagger.json');
 config.maxnumbers = require('os').cpus().length;
 
 const folder = (dir === './') ? __dirname + '/public/dist' : __dirname + '/' + dir +'public/dist'
-logger.error(`Frontend public folder: `,folder)
+logger.info(`Frontend public folder: `,folder)
 
 if (cluster.isMaster) {
-    const master = new cMaster(cluster,config)
+    const master = new cMaster(cluster,config,{
+        retrieve: (msg,  self) => {
+            logger.debug(`Master responce msg: `,msg); 
+            return new Promise((resolve) => resolve(self.broker.datablock(msg.body.topic,msg.body.from,msg.body.range))) 
+        }
+    })
 
     express()
         .use(bodyParser.urlencoded({ extended: false }))
@@ -217,7 +222,7 @@ if (cluster.isMaster) {
                     return { worker: id, resources: result.data.body}
                 })
             ));            
-            res.json({ service: `Node Worker get resources metrics for all workers`, responce: { workers: workProcess, clients: Object.keys(master.clients)/*, resources: resources*/ }}) 
+            res.json({ service: `Node Worker get resources metrics for all workers`, responce: { workers: workProcess, clients: Object.keys(master.clients), broker: master.broker._topics_ }}) 
         })
         .get('/metrics/:workerid', (req, res) => {   
             master.request({ 
@@ -233,6 +238,61 @@ if (cluster.isMaster) {
                 res.status(result.code).json({ service: `Node Worker get process metrics by worker ID`, responce: result.data.body }) 
             })             
         })     
+        .get('/logger/:module/:level', async (req, res) => {   
+            let logLevel = logger.level
+            let bdirect  = false
+
+            switch(req.params.module) {
+                case 'cluster':
+                    logLevel = logger.level = req.params.level
+                    bdirect  = true
+                    break
+                case 'master':
+                    logLevel = Logger.level = req.params.level
+                    bdirect  = true   
+                    break;    
+                case 'queue' :
+                    logLevel = queueLog.level = req.params.level
+                    bdirect  = true 
+                    break;
+                case 'worker':
+                case 'engine':
+                case 'dafsm' :
+                    const loglevels = await Promise.all(master._wpool_.map(
+                        async (id) => await master.request({ 
+                            head: {
+                                target  : id,
+                                origin  : 'master',
+                                request : 'loglevel'
+                            },
+                            body: {module: req.params.module, level: req.params.level}
+                        })
+                        .then(result => { 
+                            logger.trace(`Worker Logger (${id})->`,result.data.body) 
+                            return { worker: id, loggers: result.data.body}
+                        })
+                    ));     
+                    res.status(200).json({ 
+                        service: `Set Module <${req.params.module}> Logger Level [${req.params.level}]`, 
+                        responce: {module: req.params.module, loglevel: loglevels} 
+                    })              
+                    break;
+                default:            
+            }
+            if (bdirect)
+                res.status(200).json({ 
+                    service: `Set Module <${req.params.module}> Logger Level [${req.params.level}]`, 
+                    responce: {module: req.params.module, loglevel: logLevel} 
+                })
+        }) 
+        .put('/msgbroker/:topic', (req, res) => { 
+            const msg = {
+                service: 'publish',
+                topic  : req.params.topic,
+                notice : req.body
+            }
+            res.status(200).json({ service: `Put to broker topic: <${req.params.topic}> msg`, responce: master.broker.pubsub(msg,0) })
+        })
         .listen(PORT, () => {
             logger.trace(`Web Server now running on port`, PORT);
         });

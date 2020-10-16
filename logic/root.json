@@ -5,7 +5,7 @@
   "complete": false,
   "start": {
     "name": "fn_initialize",
-    "func": "console.debug(`: Run fn_initialize:`,fname); cntx.api().subscribe(['marko','polo'])"
+    "func": "console.debug(`: Run fn_initialize:`,fname); cntx.api().subscribe(['marko'],3)"
   },
   "stop": {
     "name": "fn_finishing",

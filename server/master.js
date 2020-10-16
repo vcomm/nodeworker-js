@@ -2,7 +2,8 @@
 
 const EventEmitter = require('events');
 const { v4: uuidv4 } = require('uuid');
-const Message = require('./message');
+const { Message }   = require('./message');
+const { msgBroker, Logger } = require('./queue');
 const log4js = require('log4js');
 const logger = log4js.getLogger('master');
 logger.level = 'trace';
@@ -33,9 +34,15 @@ class aMaster extends Message {
                 this.clients[id].res.write("data: " + JSON.stringify(data) + "\n\n");
                 logger.debug("Update: monotoring :",data); 
             } else {
-                logger.debug("Update pushing wrong clientId:",id); 
+                const fistID = Object.keys(this.clients)[0]
+                if (fistID) {
+                    this.clients[fistID].res.write("data: " + JSON.stringify(data) + "\n\n");
+                    logger.debug("Update monotoring first clientId:",fistID); 
+                }
             }
-        });        
+        });       
+        this.broker = new msgBroker(this, config.broker); 
+        this.broker.init();
         logger.trace(`Config cluster:\n`,this._config_); 
     } 
 
@@ -52,18 +59,23 @@ class aMaster extends Message {
         });    
         this._config_.setup.exec = __dirname + this._config_.setup.exec
         this._cluster_.setupMaster(this._config_.setup);     
-        for(let worker,i = 0; i < this._config_.maxnumbers; i++) {   
+        for(let worker,i = 0; i < this._config_.numbers; i++) {   
             if (this._config_.env[i]) 
                 this._config_.env[i].script = dir + this._config_.env[i].script
             logger.debug(`Proc Env: ${dir} `, this._config_.env[i])
             worker = this._cluster_.fork(this._config_.env[i] || {})
             worker.on('message', function(msg) {
                 if (msg.chat) {
-                    logger.trace(`Master recv msg: [${msg.chat.id}]:`, msg.chat.head);   
-                    if (msg.chat.head) self.evMessage(msg.chat);  
+                    if (msg.chat.head) {
+                        logger.trace(`Master recv msg: [${msg.chat.id}]:`, msg.chat.head);   
+                        self.evMessage(msg.chat); 
+                    } 
+                    if (msg.chat.service) {
+                        self.broker.pubsub(msg.chat,worker.id)
+                    }
                 } else if (msg.stream) {
                     msg.stream.worker = worker.id
-                    logger.debug(`Stream push:`,msg.stream)
+                    logger.debug(`Worker[${msg.stream.worker}](${msg.stream.process}):: push to Stream ${msg.stream.suid}; States: ${msg.stream.execute.currState}=>${msg.stream.execute.nextState}`)
                     if (msg.stream.hasOwnProperty('metrics')) {
                         for (let clientId in self.clients) {
                             self.stream.emit("push", clientId, msg.stream)
@@ -88,7 +100,7 @@ class aMaster extends Message {
     update(dir) {
         for (const id in this._cluster_.workers) {
              logger.trace(`Master send msg to: `, id);              
-             this._cluster_.workers[id].send({ chat: 'Updatepath', path: dir })
+             this._cluster_.workers[id].send({ chat: 'Updatepath', path: dir, wid: id })
              this._wpool_.push(id)
         }
     }
@@ -99,7 +111,7 @@ class aMaster extends Message {
     
     msgSend(message) {
         const to = `${message.head.target}`
-        if (to > 0 && to <= this._config_.maxnumbers) {
+        if (to > 0 && to <= this._config_.numbers) {
             logger.trace(`Master send msg to: `, to); 
             this._cluster_.workers[to].send(message)
         } else logger.error(`Master send msg to wrong worker ID: `, to); 
@@ -130,7 +142,7 @@ class aMaster extends Message {
             }
             req.on("close", function () {
                 delete self.clients[clientId]
-                console.log(`Destroy SSE session: ${clientId}`) 
+                logger.trace(`Destroy SSE session: ${clientId}`) 
             }); // <- Remove this client when he disconnects
             
             self.stream.emit("push", clientId, { subscribe : clientId });
@@ -138,4 +150,8 @@ class aMaster extends Message {
     }
 }
 
-module.exports = aMaster
+module.exports = {
+    cMaster : aMaster,
+    Logger  : logger,
+    queueLog: Logger
+}

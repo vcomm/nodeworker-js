@@ -240,7 +240,7 @@ class Content extends Mutex {
         console.debug = (msg,fname) => {
             const logic = this.get()['logic']
             const lname = logic.prj+logic.id
-            this.logger.debug(chalk`{red.bold (${lname}) [${msg}]}`)
+            this.logger.debug(chalk`{red.bold <worker-${process.pid}>(${lname}) [${msg}]}`)
             if(fname) this.logging(fname,msg)
         }
 //        console.debug = this.logger.debug.bind(this.logger);

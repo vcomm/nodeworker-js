@@ -1,9 +1,10 @@
 'use strict';
 
-const Message = require('./message');
-const adaptive = require('./engine')
+const { Message } = require('./message');
+const { aEngine, aLogger } = require('./engine')
 const log4js = require('log4js');
-let logger 
+let logger = log4js.getLogger(`worker-${process.pid}`);
+logger.level = 'trace';
 
 class aWorker extends Message {
 
@@ -11,30 +12,62 @@ class aWorker extends Message {
         super(`worker-${process.pid}`,events);
         this.metrics = []
         this.evDict  = { dafsm: false }
-        this.engine = new adaptive.aEngine('../')       
-        logger = log4js.getLogger(`worker-${process.pid}`);
-        logger.level = 'trace';
+        this.engine = new aEngine('../')    
+        this.engine._process_ = this   
         if (process.env['script']) {
-            this.engine.init(this.engine.load(this.engine.read(process.env['script'])), this.engine._cntn_)
-            logger.trace(`Worker process ${process.pid} with env: ${process.env['script']}`);
+            const verify = this.engine.load(this.engine.read(process.env['script']))
+            if (verify.fault > 0) {
+                logger.warn(`Verification Atom's Fault! ${verify.fault}, in Worker process ${process.pid}`)
+            } else {
+                this.engine.activeLogic(verify.lid)
+                logger.debug(`Worker process ${process.pid} start with env: ${process.env['script']}`)
+            }
         }
-        this.engine._process_ = this
     } 
 
     init() {        
         const self = this;
+        const cntx = this.engine.getCntn();
         process
             .on('message', function(msg) {
                 if (msg.chat) {
                     logger.trace(`Master to worker: ${process.pid} | `, msg.chat);  
                     if (msg.chat === 'Updatepath') {   
+                        self.wid = msg.wid
                         self.engine._path_ = msg.path + self.engine._path_  
-                        logger.trace(`Worker: ${process.pid}, update engine path | `, self.engine._path_);   
-                    }   
+                        logger.trace(`Worker[${msg.wid}]: ${process.pid}, update engine path | `, self.engine._path_);   
+                    } 
+                    if (msg.chat.offset) {                        
+                        const result = cntx.etlProcess(msg.chat)
+                        logger.trace(`Worker: ${process.pid}, start broker ETL processing in mode ${result.mode} | `, msg);
+                        switch(result.mode) {
+                            case 'exec':
+                                self.engine.emitEvent('dafsm','step',self.msgStream)  
+                                break;
+                            case 'retrieve':
+                                logger.debug(`Retrive data block: ${result.range}`)
+                                self.request({ 
+                                    head: {
+                                        target  : 'master',
+                                        origin  : self.wid,
+                                        request : result.mode //'retrieve'
+                                    },
+                                    body: {topic: result.topic, from: result.from, range: result.range}
+                                })
+                                .then(newdata => { 
+                                    logger.debug(`worker-${process.pid}: Retrieved data block ->`,JSON.stringify(cntx.dataUpdate(newdata.data.body))) 
+                                    self.engine.emitEvent('dafsm','step',self.msgStream)  
+                                })                                
+                                break;
+                        }
+                        
+                    }  
                 }
                 if (msg.head) self.evMessage(msg);                  
             });
-        this.collectMetrics();    
+//        cntx.apiContent();
+//        this.collectMetrics();    
+        logger.debug(`Worker process ${process.pid} complete initialize!`)    
     }
 
     msgSend(message) {
@@ -83,12 +116,26 @@ class aWorker extends Message {
     }
 }
 
-module.exports = aWorker
+module.exports = {
+    aWorker: aWorker,
+    Logger : logger
+}
 
-new aWorker({/*
-    version: (msg) => { 
-        return new Promise((resolve) => resolve({ version: `versions 1.0`})) 
-    },*/
+new aWorker({
+    loglevel: (msg, self) => { 
+        let logLevel = logger.level
+        logger.trace(`Worker: ${process.pid} | set loglevel:`,msg.body); 
+        if (msg.body.module === 'worker') {
+            logLevel = logger.level = msg.body.level
+        } else if (msg.body.module === 'engine') {
+            logLevel = aLogger.level = msg.body.level
+        } else if (msg.body.module === 'dafsm') {
+            logLevel = self.engine.getCntn().loglevel(msg.body.level)
+        }
+        return new Promise((resolve) => resolve({ 
+            module: msg.body.module, level: logLevel 
+        })) 
+    },
     evlist: (msg,  self) => {
         logger.trace(`Worker: ${process.pid} | get events collection:`); 
         return new Promise((resolve) => resolve(self.engine.emitOn())) 
