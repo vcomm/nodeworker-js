@@ -11,53 +11,20 @@ export default class nodeTarget {
         this.metrics = { count: 0 }
         this.monitorStatus = false
         this.increaseTime  = false
+        this.show = {
+            resource : 'cpu',
+            parameter: 'user'
+        }
     }
 
     init(ctx,workers) {
-        let datasets = []
         const timeFormat = 'MM/DD/YYYY HH:mm'
         const color = Chart.helpers.color;
-        /*
-        for (let [key, worker, set] of Object.entries(workers)) {
-            set = {
-                label: `Worker(${key})[#${worker.pid}]`,
-                backgroundColor: color(worker.color).alpha(0.5).rgbString(),
-                borderColor: worker.color,
-                fill: false,
-                data: [Math.round(Math.floor(Math.random() * 100))],                
-            }
-            datasets.push(set)
-        }
-        */
         this.config = {
 			type: 'line',
 			data: {
-				labels: [
-                    this.newDate(0),
-//                    this.newDate(1),
-//                    this.newDate(2),
-                ],
-				datasets: [/*{
-					label: 'My First dataset',
-					backgroundColor: color('#f46b6d').alpha(0.5).rgbString(),
-					borderColor: '#f46b6d',
-					fill: false,
-					data: [
-						Math.round(Math.floor(Math.random() * 100)),
-						Math.round(Math.floor(Math.random() * 100)),
-						Math.round(Math.floor(Math.random() * 100))
-					],
-				}, {
-					label: 'My Second dataset',
-					backgroundColor: color('#80c5e2').alpha(0.5).rgbString(),
-					borderColor: '#80c5e2',
-					fill: false,
-					data: [
-						Math.round(Math.floor(Math.random() * 100)),
-						Math.round(Math.floor(Math.random() * 100)),
-						Math.round(Math.floor(Math.random() * 100))
-					],
-				}*/]
+				labels: [],
+				datasets: []
 			},
 			options: {
 				title: {
@@ -91,16 +58,10 @@ export default class nodeTarget {
                 backgroundColor: color(worker.color).alpha(0.5).rgbString(),
                 borderColor: worker.color,
                 fill: false,
-//                data: [worker.resources.metrics[worker.resources.metrics.length-1].cpu.user]
-                data: [Math.round(Math.floor(Math.random() * 10000))],                
             }
             this.config.data.datasets.push(set)
         }        
         this.chart = new Chart(ctx, this.config)
-        setInterval(()=>{ 
-            this.config.data.labels.push(this.newDate(this.config.data.labels.length));
-//            this.chart.update()
-        },50000)
     }
 
     newDate(min) {
@@ -115,58 +76,25 @@ export default class nodeTarget {
         return `${hours}:${minutes}"${seconds}`   
     }
 
-    updateMetrics(metric,id) {
-        if (this.config.data.datasets.length > 0 &&
-            id < this.config.data.datasets.length) {
-            this.config.data.datasets[id-1].data.push(metric.cpu.user)    
-            console.log(`Update ${id}`,metric)
-        }        
+    updateMetrics(resource,parameter) {
+        this.show.resource  = resource
+        this.show.parameter = parameter
+        this.chart.clear()       
+        this.config.data.labels.length = 0
+        for (let i = 0; i < this.config.data.datasets.length; i++) {
+             this.config.data.datasets[i].data.length = 0
+        }
     }
 
-    chartUpdate(metrics,id) {
-//        const interval = 60000; // 60 sec
-
+    updateChart(metrics,id) {
         if (this.config.data.datasets.length > 0) {
-
-            if (this.metrics.count < this.config.data.datasets.length) {
-                console.log(`Update metric ${id}`,metrics)
-                this.metrics[id] = metrics
-                this.metrics.count++
-                if (this.metrics.count >= this.config.data.datasets.length-1) {
-                    this.metrics.count = 0
-//                    this.config.data.labels.push(this.newDate(this.config.data.labels.length));
-                    for (let [id, metric] of Object.entries(this.metrics)) {
-                        if (id !== 'count')
-                            this.config.data.datasets[id-1].data.push(metric.cpu.user)
-                    }
-                    console.log(`Update chart`)
-                    this.chart.update()  
-                }               
-            }
-
-/*
-                if (!this.increaseTime) {
-                    this.increaseTime = true 
-                    setTimeout(()=>{ this.increaseTime = false },interval)
-                    this.config.data.labels.push(this.newDate(this.config.data.labels.length));
-                }
-
-            for (let index = 0; index < this.config.data.datasets.length; ++index) {
-                if (typeof this.config.data.datasets[index].data[0] === 'object') {
-                    this.config.data.datasets[index].data.push({
-                        x: this.newDate(this.config.data.datasets[index].data.length),
-                        y: Math.round(Math.floor(Math.random() * 100)),
-                    });
-                } else {
-                    console.log(`Update ${id}`,metrics)
-                    this.config.data.datasets[index].data.push(metrics.cpu.user)
-//                    this.config.data.datasets[index].data.push(Math.round(Math.floor(Math.random() * 100)));
-                }
-            } 
-            this.chart.update() 
-*/            
-          
-        }
+            console.log(`Update worker ${id}, type metric.${this.show.resource}.${this.show.parameter} = ${metrics[this.show.resource][this.show.parameter]}`,metrics)
+            this.config.data.datasets[id-1].data.push({
+                x: metrics.time,
+                y: metrics[this.show.resource][this.show.parameter]
+            })
+            this.chart.update()
+        }    
     }
 
     suidGet() { return this._suid_ }
@@ -204,8 +132,7 @@ export default class nodeTarget {
               monitor(data.execute,data.process);       
           } else if (data.hasOwnProperty('metrics')) {
               health(data.metrics,data.worker); 
-              self.chartUpdate(data.metrics,data.worker);
-              //self.updateMetrics(data.metrics,data.worker)
+              self.updateChart(data.metrics,data.worker)
           }      
         };                    
         source.onerror = function(e) {
@@ -219,16 +146,7 @@ export default class nodeTarget {
         return source
     }    
 
-    request(config,handle) {
-/* 
-    const config = {
-        url     : `http://target:port`,
-        method  : 'post',
-        service : 'attach',
-        params  : ['dafsm'],
-        body    : JSON
-    }
-*/   
+    request(config,handle) {   
         const init = (config.method === 'post') ? {
             method: config.method,
             headers: {

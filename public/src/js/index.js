@@ -471,6 +471,11 @@ function transTo() {
         $this.find($dropdownMenu).removeClass(showClass);
     })   
 }
+//----------------------------------------------------------------------//
+window.metricSource = function(resource, parameter) {
+    $('i#metricSource').text(` ${resource}::${parameter}`)
+    cluster.updateMetrics(resource,parameter)
+}
 
 window.transFromTo = function(src,dst) {
     console.log(`make trans from ${src} to ${dst}`)

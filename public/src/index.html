@@ -218,9 +218,12 @@
       <div class="tab-content" id="paper-tabContent" style="width: 100%;height: 100%;transition: 0.8s;">
         <div class="tab-pane card shadow border-secondary mb-3 main-content" id="Code" role="tabpanel" aria-labelledby="code-edit-tab" style="max-width: 70%;height: 90%;">
           <div class="card-header bg-transparent border-secondary" style="display: flex;">
-            <p data-toggle="tooltip" data-placement="top" title="Use follow pattern code for async function body:"><i> return (new Promise((resolve,reject) => { 
-              [your code] resolve(cntx)/reject(error) 
-           })).then(data => { [your code] return data; });</i></p>
+            <p data-toggle="tooltip" data-placement="top" title="Use follow pattern code for async function body:">
+              <i> return (new Promise((resolve,reject) => {<br> 
+                    [your code] resolve(cntx)/reject(error)<br> 
+                  })).then(data => { [your code] return data; });
+              </i>
+            </p>
             <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="padding-top: initial;margin-left: auto;">
               [<i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>]
             </a>
@@ -258,13 +261,20 @@
         </div> 
 
         <div class="tab-pane card shadow mb-3 main-content" id="Cluster" role="tabpanel" aria-labelledby="cluster-health-tab" style="width: 70%;height: 90%;">
-          <div class="card-header" style="display: flex;"><b>Cluster Monitoring</b>  
+          <div class="card-header" style="display: flex;"><b>Cluster Monitoring: </b><i id="metricSource" style="margin-left: auto;">cpu::user</i>  
             <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="padding-top: initial;margin-left: auto;">
               [<i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>]
             </a>
             <div class="dropdown-menu">
-              <a class="dropdown-item" href="#" onclick="" >CPU Metrics</a>
-              <a class="dropdown-item" href="#" onclick="">MEM Metrics</a>
+              <h5 class="dropdown-header"><b>CPU Metrics:</b></h5>
+              <a class="dropdown-item" href="#" onclick="metricSource('cpu','user')" >::user</a>
+              <a class="dropdown-item" href="#" onclick="metricSource('cpu','system')" >::system</a>
+              <div class="dropdown-divider"></div>
+              <h5 class="dropdown-header"><b>MEM Metrics:</b></h5>
+              <a class="dropdown-item" href="#" onclick="metricSource('mem','rss')">::rss</a>
+              <a class="dropdown-item" href="#" onclick="metricSource('mem','heapTotal')">::heapTotal</a>
+              <a class="dropdown-item" href="#" onclick="metricSource('mem','heapUsed')">::heapUsed</a>
+              <a class="dropdown-item" href="#" onclick="metricSource('mem','external')">::external</a>
             </div>                    
           </div>       
           <div class="card-body">

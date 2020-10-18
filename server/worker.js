@@ -65,8 +65,8 @@ class aWorker extends Message {
                 }
                 if (msg.head) self.evMessage(msg);                  
             });
-//        cntx.apiContent();
-//        this.collectMetrics();    
+
+        this.collectMetrics();    
         logger.debug(`Worker process ${process.pid} complete initialize!`)    
     }
 

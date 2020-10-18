@@ -75,7 +75,7 @@ class aMaster extends Message {
                     }
                 } else if (msg.stream) {
                     msg.stream.worker = worker.id
-                    logger.debug(`Worker[${msg.stream.worker}](${msg.stream.process}):: push to Stream ${msg.stream.suid}; States: ${msg.stream.execute.currState}=>${msg.stream.execute.nextState}`)
+                    logger.debug(`Worker[${msg.stream.worker}](${msg.stream.process}):: push to Stream: `,msg.stream)
                     if (msg.stream.hasOwnProperty('metrics')) {
                         for (let clientId in self.clients) {
                             self.stream.emit("push", clientId, msg.stream)
