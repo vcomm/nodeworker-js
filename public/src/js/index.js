@@ -106,6 +106,7 @@ $(function() {
             const funcname = $('a#code-edit-tab').children('b').text();
             if (funcname !== 'Editor') {
                 $(`div#body-${funcname}`).text(code)
+                $(`div#card-${funcname}`).css({ 'background-color': 'lightpink' })  
                 console.log(`Change ${funcname} code: `,code);
             } else {
                 console.log(`Not assigned Change ${funcname} code: `,code);
