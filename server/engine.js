@@ -35,11 +35,12 @@ class adaptiveContent extends CONTENT {
                 logger.info(`${fnKey} atom's function body found in previous script`)
             }
         } else {
+            logger.info(`Worker process ${process.pid} try assign to ${fnKey} new function body`)
             this._abios_[fnKey] = {
                 name: fnKey,
                 func: new Function(this._dflow_, 'fname', fnCode)
             }
-            logger.info(`${fnKey} atom's assigned new function body`)
+            logger.info(`Worker process ${process.pid} atom's ${fnKey} assigned new function body`)
             bverify = true
         }
         return {fname: fnKey, verify: bverify}
@@ -64,6 +65,14 @@ class adaptiveContent extends CONTENT {
                 service: 'subscribe',
                 topics : topics
             })
+        }
+        this._api_.data = (key) => {
+            if (!this._data_) {
+                return { offset: 0, value: undefined } 
+            } else {
+                const data = (this._data_ instanceof Array && this._data_.length > 0) ? this._data_[this._data_.length-1] : this._data_   
+                return { offset: data.offset, value: data[key] }     
+            }    
         }
     }
 
@@ -246,7 +255,7 @@ class adaptiveEngine extends ASYNCWRAPPER {
                 status.error = 'Not compatible States'
             }
         } catch(e) {
-            logger.fatal('Error: ' + e.name + ":" + e.message + "\n" + e.stack);
+            logger.fatal(`Worker process ${process.pid} ERROR: in ${logic["id"]} >` + e.name + ":" + e.message + "\n" + e.stack);
             status.error = e
         } finally {
             if (verifyproc.fault === 0) 
