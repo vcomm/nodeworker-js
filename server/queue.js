@@ -101,9 +101,13 @@ class queueBroker extends EventEmitter {
     }
 
     retention(topic) {
-        if (this._topics_[topic].queue.length > this._cfg_.retention.qsize) {
-            this.del(topic)
-            logger.trace(`Clear tail topic: ${topic}`)
+        const removedItems = this._topics_[topic].queue.length - 
+                             this._cfg_.retention.qsize
+        if (removedItems > 0) {    
+            for(let i = 0; i < removedItems; i++) {       
+                this.del(topic)
+            }
+            logger.trace(`Clear items: ${removedItems} topic: ${topic}`)
         }        
     }
 
