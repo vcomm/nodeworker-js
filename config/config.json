@@ -4,10 +4,10 @@
         "args": ["--use", "http"]
     },
     "numbers": 3,
-    "maxnumbers": 2,
+    "maxnumbers": 3,
     "env" : [
-        { "script": "logic/root.json" },
-        { "script": "logic/main.json" },
+        { "script": "logic/polo.json" },
+        { "script": "logic/marko.json" },
         { "script": "logic/tloopd.json" }
     ],
     "broker": {
