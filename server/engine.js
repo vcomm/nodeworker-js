@@ -66,17 +66,19 @@ class adaptiveContent extends CONTENT {
                 topics : topics
             })
         }
-        this._api_.data = (key) => {
+        this._api_.data = () => {
             if (!this._data_) {
-                return { offset: 0, value: undefined } 
+                return this._data_ 
             } else {
                 const data = (this._data_ instanceof Array && this._data_.length > 0) ? this._data_[this._data_.length-1] : this._data_   
-                return { offset: data.offset, value: data[key] }     
+                logger.trace(`API data() worker-${process.pid}:`, data)
+                return data     
             }    
         }
     }
 
-    etlProcess(msg) {
+    etlProcess(msg,self) {
+/*        
         if (!this._data_ || this._threshold_ === 1) { 
             this._data_ = msg
             return {mode: 'exec', offset: this._data_.offset}
@@ -89,7 +91,33 @@ class adaptiveContent extends CONTENT {
             } else {
                 return {mode: 'skip', offset: msg.offset}
             }
-        }        
+        }
+*/   
+        if (this._threshold_ === 1) { 
+            this.dataUpdate(msg)
+            logger.trace(`ETL worker-${process.pid}, exec mode`, this._data_);
+//            this.emit()
+            self.engine.emitEvent('dafsm','step',self.msgStream) 
+        } else {
+            const from = (this._data_ instanceof Array && this._data_.length > 0) ? 
+                          this._data_[this._data_.length-1].offset : 
+                          (this._data_) ? this._data_.offset : this.dataUpdate(msg).offset
+            logger.debug(`ETL Offsets: ${from} / ${msg.offset}`, JSON.stringify(this._data_))
+            if ((msg.offset - from) >= this._threshold_) {
+                self.request({ 
+                    head: {
+                        target  : 'master',
+                        origin  : self.wid,
+                        request : 'retrieve'
+                    },
+                    body: {topic: msg.topic, from: from, range: msg.offset}
+                })
+                .then(newdata => { 
+                    logger.debug(`ETL worker-${process.pid}: Retrieved data block ->`,JSON.stringify(this.dataUpdate(newdata.data.body))) 
+                    self.engine.emitEvent('dafsm','step',self.msgStream)  
+                })            
+            }
+        }             
     }
 
     dataUpdate(data) {

@@ -21,6 +21,7 @@ class aWorker extends Message {
             } else {
                 this.engine.activeLogic(verify.lid)
                 logger.debug(`Worker process ${process.pid} start with env: ${process.env['script']}`)
+                setTimeout(() => { this.engine.emitEvent('dafsm','step',this.msgStream) }, 1000)
             }
         }
     } 
@@ -37,30 +38,8 @@ class aWorker extends Message {
                         self.engine._path_ = msg.path + self.engine._path_  
                         logger.trace(`Worker[${msg.wid}]: ${process.pid}, update engine path | `, self.engine._path_);   
                     } 
-                    if (msg.chat.offset) {                        
-                        const result = cntx.etlProcess(msg.chat)
-                        logger.trace(`Worker: ${process.pid}, start broker ETL processing in mode ${result.mode} | `, msg);
-                        switch(result.mode) {
-                            case 'exec':
-                                self.engine.emitEvent('dafsm','step',self.msgStream)  
-                                break;
-                            case 'retrieve':
-                                logger.debug(`Retrive data block: ${result.range}`)
-                                self.request({ 
-                                    head: {
-                                        target  : 'master',
-                                        origin  : self.wid,
-                                        request : result.mode //'retrieve'
-                                    },
-                                    body: {topic: result.topic, from: result.from, range: result.range}
-                                })
-                                .then(newdata => { 
-                                    logger.debug(`worker-${process.pid}: Retrieved data block ->`,JSON.stringify(cntx.dataUpdate(newdata.data.body))) 
-                                    self.engine.emitEvent('dafsm','step',self.msgStream)  
-                                })                                
-                                break;
-                        }
-                        
+                    if (msg.chat.offset) {   
+                        cntx.etlProcess(msg.chat,self)                        
                     }  
                 }
                 if (msg.head) self.evMessage(msg);                  
