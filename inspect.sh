@@ -1,0 +1,1 @@
+docker run -it vcomm/nodejsworker:cluster sh
