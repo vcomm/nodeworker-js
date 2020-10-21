@@ -17,18 +17,14 @@
     
       <div id="State" style="display:none">
         <input autofocus="autofocus" class="modal-enter" id="stateName" placeholder="choose a state name" type="text">
-        <button id="confirmState" class="modal-enter">Confirm</button>
-  
+        <button id="confirmState" class="modal-enter">Confirm</button> 
         <br><label><b>Type: </b></label>
         <input type="radio" name="stateType" value="initialState">Start
         <input type="radio" name="stateType" value="finalState">End
         <input type="radio" name="stateType" value="regularState" checked>Regular
-  
       </div>
     
-      <div id="Trans" style="display:none">
-        <!--<input autofocus="autofocus" class="modal-enter" id="transName" placeholder="choose a transition name" type="text">-->
-        
+      <div id="Trans" style="display:none">        
         <select id="fromState" class="modal-enter">
           <option value="" disabled selected>source state</option>
         </select>
@@ -38,7 +34,6 @@
         <button id="confirmTrans" class="modal-enter">Confirm</button><br>
       </div>
   
-      <!--<div id="Code" style="display:none;width:100%;height:100%;overflow:auto;"></div>-->
       </div>
     </div>
       <input id="projectinput" type="file" style="display:none;" />
@@ -46,78 +41,6 @@
 
     <nav class="navbar fixed-top navbar-light" style="background-color: #e3f2fd; border: 2px solid black; border-radius: 5px;">
       <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-      <!--  
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle"
-                type="button" id="dropdownMenuNavFile" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false" style="border-radius: 5px;"><i class="fas fa-copy"></i>
-          Project
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuNavFile">      
-          <a class="dropdown-item" href="#" id="newGraph"><i class="fas fa-folder-plus"></i>   New</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true"><b>LocalStore</b></a>
-          <a class="dropdown-item" href="#" id="openDafsm"><i class="fas fa-folder-open"></i>   Read</a>
-          <a class="dropdown-item" href="#" id="saveDafsm"><i class="fas fa-save"></i>   Keep</a>           
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item disabled" href="#" tabindex="-1" aria-disabled="true"><b>Files</b></a>
-          <a class="dropdown-item" href="#" id="openProj"><i class="fas fa-folder-open"></i>   Open</a>
-          <a class="dropdown-item" href="#" id="saveProj"><i class="fas fa-save"></i>   Save</a>        
-        </div>
-      </div>
-      &nbsp;
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle"
-                type="button" id="dropdownMenuNavCluster" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false" style="border-radius: 5px;"><i class="fas fa-sitemap"></i></i></i>
-          Cluster
-        </button>    
-        <div class="dropdown-menu">
-          <a class="dropdown-item" href="#" onclick="showTab('a#worker-hub-tab')">Link Target</a>
-        </div>        
-      </div>
-      &nbsp;
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle"
-                type="button" id="dropdownMenuNavGraph" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false" style="border-radius: 5px;"><i class="fas fa-project-diagram"></i>
-          Graph
-        </button>
-        <div id="graphContextMenu" class="dropdown-menu" aria-labelledby="dropdownMenuNavGraph">
-          <a class="dropdown-item paper" href="#" id="makeState"><i class="fas fa-file-alt"></i>   make State</a>
-          <a class="dropdown-item paper" href="#" id="makeTrans"><i class="fas fa-exchange-alt"></i>   make Trans</a>
-          <a class="dropdown-item paper" href="#" id="showLogic"><i class="fab fa-codepen"></i>   show Logic</a>
-          <a class="dropdown-item paper" href="#" id="pushLogic"><i class="fas fa-database"></i>   push Logic</a>
-
-          <a class="dropdown-item state" href="#" id="delState"><i class="fas fa-trash"></i>   del State</a>
-          <div class="dropdown-divider state"></div>
-          <a class="dropdown-item state init" href="#" id="addEntry"><i class="fas fa-sign-in-alt"></i>   add Entry</a>
-          <a class="dropdown-item state final" href="#" id="addExit"><i class="fas fa-sign-out-alt"></i>   add Exit</a>
-          <a class="dropdown-item state init final" href="#" id="addStay"><i class="fas fa-recycle"></i>   add Stay</a>
-
-          <a class="dropdown-item trans" href="#" id="addTrigger"><i class="fas fa-bolt"></i>   add Trigger</a>
-          <a class="dropdown-item trans" href="#" id="addEffect"><i class="fab fa-buffer"></i>   add Effect</a>
-
-          <div class="dropdown-divider state"></div>
-          <a class="dropdown-item state disabled" href="#" tabindex="-1" aria-disabled="true"><i class="fas fa-exchange-alt"></i>   :Link Trans To:</a>
-          <div class="dropdown-divider state" id="dstStateList"></div>
-          
-        </div>
-      </div>
-      
-      &nbsp;
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle"
-                type="button" id="dropdownMenuNavCode" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false" style="border-radius: 5px;"><i class="far fa-file-code"></i></i>
-          Code
-        </button>    
-        <div class="dropdown-menu">
-          <a class="dropdown-item" href="#" onclick="newAction(this)">New Action</a>
-          <a class="dropdown-item" href="#" onclick="attachFuncTo('start')">Attach to Start</a>
-          <a class="dropdown-item" href="#" onclick="attachFuncTo('stop')">Attach to Stop</a>
-        </div>        
-      </div> -->      
       &nbsp;    
       <div class="navbar">
         <code id="selectedItem">Not Seleted</code>                      
@@ -182,25 +105,6 @@
         &nbsp;
         <ul id="clusterWorker" class="list-group" style="margin: revert;"></ul> 
       </div> 
-      <!--
-      <div class="tab-pane" id="connect" role="tabpanel" aria-labelledby="net-connect-tab">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="targetStatus"><i class="fas fa-link"></i></span>
-          </div>
-          <input type="text" placeholder="Target" aria-label="Target" class="form-control">
-          <input type="text" placeholder="Port" aria-label="Port" class="form-control">
-          <button class="btn btn-primary dropdown-toggle" id="linkAction" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Connect</button>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="#" onclick="getConnect('button#linkAction')">Connection</a>
-            <a class="dropdown-item target disabled" href="#" onclick="disConnect('button#linkAction')">Disconnect</a>
-            <div role="separator" class="dropdown-divider"></div>
-            <a class="dropdown-item target disabled" href="#" onclick="getLogicsList()">Get Logics List</a>
-            <a class="dropdown-item target disabled" href="#" onclick="attachLogic()">Attach New Logic</a>
-          </div>
-        </div>
-      </div>  
-      --> 
     </div>
 
     <main id="paper" role="main" class="mh-100 jumbotron" style="margin-top: -30px; height: 85vh; background-color: white">
@@ -237,7 +141,7 @@
         </div> 
 
         <div class="tab-pane card shadow mb-3 main-content active" id="graph" role="tabpanel" aria-labelledby="graph-svg-tab" style="max-width: 70%;height: 90%;">
-          <div class="card-header" style="display: flex;"><b>Graph Diagram</b>  
+          <div class="card-header" style="display: flex;"><b>Graph Diagram</b><i id="graphDiagram" style="margin-left: auto;"></i>    
             <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="padding-top: initial;margin-left: auto;">
               [<i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>]
             </a>

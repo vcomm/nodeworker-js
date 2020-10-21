@@ -118,6 +118,7 @@ $(function() {
     if (restore) {
         uml.jsonedit.set(restore)
         uml.restoreGraph(restore.states) 
+        $('i#graphDiagram').text(` ${restore.prj}${restore.id}`)
         uml.printAtomsList(restore.states,restore.start,restore.stop)
             .forEach((atom) => 
                 showAtom(atom.name,
@@ -165,12 +166,7 @@ $(function() {
                     </td>
                 </tr>`
                 })
-                workerlist.append(`
-                <li class="list-group-item list-group-item-action nav-item dropdown" data-toggle="collapse" data-target="#accordion-${key}" class="clickable" style="display: flex;background-color: ${color};">
-                <b>Worker #${key} pid #${worker.pid}[${worker.status}]</b> 
-                <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="padding-top: initial;margin-left: auto;">
-                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                </a>
+/*   Reserved for future implementation
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="/" onclick="" title="disabled">Get Logics</a>
                   <a class="dropdown-item" href="/" onclick="" title="disabled">Get Events</a>
@@ -178,6 +174,16 @@ $(function() {
                   <a class="dropdown-item" href="#" onclick="attachLogic('${key}')" title="Attach Logic to Worker">Attach Logic</a>
                   <a class="dropdown-item" href="/" onclick="eventCreate('${key}')" title="Create Worker Event (disabled)">Create Event</a>
                   <a class="dropdown-item" href="/" onclick="eventDelete('${key}')" title="Delete Worker Event (disabled)">Delete Event</a>
+                </div>
+*/
+                workerlist.append(`
+                <li class="list-group-item list-group-item-action nav-item dropdown" data-toggle="collapse" data-target="#accordion-${key}" class="clickable" style="display: flex;background-color: ${color};">
+                <b>Worker #${key} pid #${worker.pid}[${worker.status}]</b> 
+                <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="padding-top: initial;margin-left: auto;">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" onclick="attachLogic('${key}')" title="Attach Logic to Worker">Attach Logic</a>
                 </div>
                 </li>
                 <div id="accordion-${key}" class="collapse">
@@ -483,6 +489,11 @@ window.transFromTo = function(src,dst) {
     uml.makeTrans(src,dst)
 }
 
+window.codeTemplate = function(funcname,code) {
+    $(`div#body-${funcname}`).text(code)
+    $(`div#card-${funcname}`).css({ 'background-color': 'lightpink' }) 
+}
+
 window.editCode = function(elem) {
     const cardHeader = $(elem).parent().siblings('div.card-header')
     const fname = cardHeader.children('h5').children('a').text();
@@ -572,7 +583,7 @@ window.updateJsonFuncBody = function(elem) {
 }
 
 window.newAction = function(elem) {
-    const fname = `fn_${Math.random().toString(20).substr(2, 6)}`
+    const fname = prompt('Enter Atom Name', `fn_${Math.random().toString(20).substr(2, 6)}`)
     var count = parseInt($("div#codecollect").attr("count"))+1
     $("div#codecollect")
 //    .append(`
@@ -586,6 +597,7 @@ window.newAction = function(elem) {
           <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
         </a>
         <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="codeTemplate('${fname}','return (new Promise((resolve,reject) => { setTimeout(() => resolve(cntx), 1000) })).then(data => { return true });')"><i class="fas fa-sync-alt"></i>   Async Body</a>
             <a class="dropdown-item" href="#" onclick="delAtomAction('card-${fname}')"><i class="fas fa-trash-alt"></i>   Delete</a>
         </div>
       </h5>
@@ -615,6 +627,7 @@ function showAtom(fname, func, verify) {
           <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
         </a>
         <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="codeTemplate('${fname}','return (new Promise((resolve,reject) => { setTimeout(() => resolve(cntx), 1000) })).then(data => { return true });')"><i class="fas fa-sync-alt"></i>   Async Body</a>
             <a class="dropdown-item" href="#" onclick="delAtomAction('card-${fname}')"><i class="fas fa-trash-alt"></i>   Delete</a>
         </div>
       </h5>
@@ -802,6 +815,7 @@ window.loadLogic = (sname,worker) => {
         uml.jsonedit.set(json)
         uml.graph.clear()
         uml.restoreGraph(json.states)   
+        $('i#graphDiagram').text(` ${json.prj}${json.id}`)
         $("div#codecollect").empty();
         uml.printAtomsList(json.states,json.start,json.stop).forEach((atom) => showAtom(atom.name,atom.func,true))      
     })
@@ -862,6 +876,7 @@ window.showLogicFromStore = (lid) => {
     uml.jsonedit.set(json)
     uml.graph.clear()
     uml.restoreGraph(json.states)   
+    $('i#graphDiagram').text(` ${json.prj}${json.id}`)
     uml.printAtomsList(json.states,json.start,json.stop)
         .forEach((atom) => 
             showAtom(atom.name,
@@ -1022,7 +1037,12 @@ function lanchContextMenu(elemid) {
         }
     */  
 
-    $('a#newGraph').click(()=>{ uml.graph.clear(); uml.jsonedit.set(initDafsmTemplate); $("div#codecollect").empty(); })
+    $('a#newGraph').click(()=>{ 
+        uml.graph.clear(); 
+        uml.jsonedit.set(initDafsmTemplate); 
+        $('i#graphDiagram').text(` ${initDafsmTemplate.prj}${initDafsmTemplate.id}`)
+        $("div#codecollect").empty(); 
+    })
     $('a#openProj').click(()=>{ $('input#projectinput').click() })
     $('a#saveProj').click(()=>{ 
         const proj = {
