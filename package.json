@@ -12,7 +12,7 @@
     "flint": "npx eslint public/src/js/",
     "test": "node cluster ./",
     "prod": "node ./dist/cluster ../",
-    "secure": "javascript-obfuscator cluster.js --output ./dist --compact true --self-defending false & javascript-obfuscator ./server --output ./dist --compact true --self-defending false"
+    "secure": "javascript-obfuscator cluster.js --output ./dist --compact true --self-defending false & javascript-obfuscator ./server --output ./dist/server --compact true --self-defending false"
   },
   "repository": {
     "type": "git",
